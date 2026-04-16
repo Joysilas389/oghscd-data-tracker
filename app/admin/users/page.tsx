@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import Sidebar from "@/components/Sidebar";
 import ChangeRoleButton from "@/components/ChangeRoleButton";
 import ResetPasswordButton from "@/components/ResetPasswordButton";
+import DeleteUserButton from "@/components/DeleteUserButton";
 
 export default async function AdminUsersPage() {
   const session = await getSession();
@@ -14,8 +15,8 @@ export default async function AdminUsersPage() {
     orderBy: { createdAt: "desc" },
     select: {
       id: true, fullName: true, email: true, role: true,
-      cadre: true, facilityName: true, isActive: true, createdAt: true,
-      failedLogins: true, lockedUntil: true,
+      cadre: true, facilityName: true, isActive: true,
+      createdAt: true, failedLogins: true, lockedUntil: true,
     },
   });
 
@@ -57,10 +58,17 @@ export default async function AdminUsersPage() {
                   </div>
                 )}
                 {u.id !== session.userId ? (
-                  <div className="d-flex gap-2 flex-wrap">
+                  <div className="d-flex gap-2 flex-wrap mt-2">
                     <ChangeRoleButton userId={u.id} currentRole={u.role} />
                     {session.role === "ADMIN" && (
-                      <ResetPasswordButton userId={u.id} userName={u.fullName} />
+                      <>
+                        <ResetPasswordButton userId={u.id} userName={u.fullName} />
+                        <DeleteUserButton
+                          userId={u.id}
+                          userName={u.fullName}
+                          userRole={u.role}
+                        />
+                      </>
                     )}
                   </div>
                 ) : (
@@ -84,7 +92,7 @@ export default async function AdminUsersPage() {
                     <th>Role</th>
                     <th>Status</th>
                     <th>Change Role</th>
-                    {session.role === "ADMIN" && <th>Reset Password</th>}
+                    {session.role === "ADMIN" && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -116,7 +124,14 @@ export default async function AdminUsersPage() {
                       {session.role === "ADMIN" && (
                         <td>
                           {u.id !== session.userId && (
-                            <ResetPasswordButton userId={u.id} userName={u.fullName} />
+                            <div className="d-flex gap-1 flex-wrap">
+                              <ResetPasswordButton userId={u.id} userName={u.fullName} />
+                              <DeleteUserButton
+                                userId={u.id}
+                                userName={u.fullName}
+                                userRole={u.role}
+                              />
+                            </div>
                           )}
                         </td>
                       )}
