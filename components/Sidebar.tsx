@@ -17,6 +17,7 @@ const baseLinks = [
   { href: "/reports", label: "Reports", icon: "📁" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const managerLinks = [
@@ -29,6 +30,7 @@ const managerLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const adminLinks = [
@@ -42,6 +44,7 @@ const adminLinks = [
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 // Mobile bottom nav - max 5 items per role
@@ -51,6 +54,7 @@ const mobileScreenerLinks = [
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const mobileManagerLinks = [
@@ -59,6 +63,7 @@ const mobileManagerLinks = [
   { href: "/review", label: "Review", icon: "🔍" },
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const mobileAdminLinks = [
@@ -67,6 +72,7 @@ const mobileAdminLinks = [
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit", icon: "📜" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 export default function Sidebar({ role, fullName, facilityName, active }: Props) {
