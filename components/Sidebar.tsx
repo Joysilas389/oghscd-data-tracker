@@ -31,9 +31,17 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
     <>
       {/* Desktop sidebar */}
       <div className="d-none d-md-flex flex-column p-3"
-        style={{ width: 230, minWidth: 230, background: "#1a5276", minHeight: "100vh", position: "sticky", top: 0, height: "100vh", overflowY: "auto" }}>
-        <div className="text-white fw-bold mb-0" style={{ fontSize: "0.9rem" }}>OGH SCD E-Tracker</div>
-        <div className="text-white-50 mb-4" style={{ fontSize: "0.65rem" }}>Oda Government Hospital</div>
+        style={{
+          width: 230, minWidth: 230, background: "#1a5276",
+          minHeight: "100vh", position: "sticky", top: 0,
+          height: "100vh", overflowY: "auto"
+        }}>
+        <div className="text-white fw-bold mb-0" style={{ fontSize: "0.9rem" }}>
+          OGH SCD E-Tracker
+        </div>
+        <div className="text-white-50 mb-4" style={{ fontSize: "0.65rem" }}>
+          Oda Government Hospital
+        </div>
         <nav className="nav flex-column flex-grow-1">
           {allLinks.map(item => (
             <Link key={item.href} href={item.href}
@@ -56,36 +64,58 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         </div>
       </div>
 
-      {/* Mobile top bar - NO "+ New" button, just logo and logout */}
-      <div className="d-md-none w-100 d-flex align-items-center justify-content-between px-3 py-2"
-        style={{ background: "#1a5276", position: "sticky", top: 0, zIndex: 1000 }}>
-        <Link href="/dashboard" className="text-white fw-bold text-decoration-none" style={{ fontSize: "0.85rem" }}>
+      {/* Mobile top bar - compact */}
+      <div className="d-md-none w-100 d-flex align-items-center justify-content-between px-3"
+        style={{ background: "#1a5276", position: "sticky", top: 0, zIndex: 1000, height: 48, minHeight: 48 }}>
+        <Link href="/dashboard" className="text-white text-decoration-none fw-bold"
+          style={{ fontSize: "0.8rem", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           OGH SCD E-Tracker
         </Link>
-        <LogoutButton />
+        <div style={{ flexShrink: 0, marginLeft: 8 }}>
+          <LogoutButton />
+        </div>
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow-sm"
+      <div className="d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow"
         style={{ zIndex: 999 }}>
-        <div className="d-flex justify-content-around py-2">
-          <Link href="/dashboard" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
-            <div className="fs-5">📊</div><div>Dashboard</div>
+        <div className="d-flex justify-content-around py-1">
+          <Link href="/dashboard" className="text-center text-decoration-none text-muted py-1"
+            style={{ fontSize: "0.6rem", flex: 1 }}>
+            <div style={{ fontSize: "1.2rem" }}>📊</div>
+            <div>Home</div>
           </Link>
-          <Link href="/patients" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
-            <div className="fs-5">👥</div><div>Patients</div>
+          <Link href="/patients" className="text-center text-decoration-none text-muted py-1"
+            style={{ fontSize: "0.6rem", flex: 1 }}>
+            <div style={{ fontSize: "1.2rem" }}>👥</div>
+            <div>Patients</div>
           </Link>
-          <Link href="/screenings/new" className="text-center text-decoration-none" style={{ fontSize: "0.6rem" }}>
-            <div className="fs-4 text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-              style={{ width: 40, height: 40, background: "#1a5276", marginTop: "-12px" }}>➕</div>
+          <Link href="/screenings/new" className="text-center text-decoration-none py-1"
+            style={{ fontSize: "0.6rem", flex: 1 }}>
+            <div className="rounded-circle d-inline-flex align-items-center justify-content-center text-white"
+              style={{ width: 36, height: 36, background: "#1a5276", fontSize: "1rem", marginTop: -10 }}>
+              ➕
+            </div>
             <div className="text-muted">New</div>
           </Link>
-          <Link href="/screenings" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
-            <div className="fs-5">📋</div><div>Screenings</div>
+          <Link href="/screenings" className="text-center text-decoration-none text-muted py-1"
+            style={{ fontSize: "0.6rem", flex: 1 }}>
+            <div style={{ fontSize: "1.2rem" }}>📋</div>
+            <div>Records</div>
           </Link>
-          <Link href="/reports" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
-            <div className="fs-5">📤</div><div>Export</div>
-          </Link>
+          {(role === "MANAGER" || role === "ADMIN") ? (
+            <Link href="/review" className="text-center text-decoration-none text-muted py-1"
+              style={{ fontSize: "0.6rem", flex: 1 }}>
+              <div style={{ fontSize: "1.2rem" }}>🔍</div>
+              <div>Review</div>
+            </Link>
+          ) : (
+            <Link href="/reports" className="text-center text-decoration-none text-muted py-1"
+              style={{ fontSize: "0.6rem", flex: 1 }}>
+              <div style={{ fontSize: "1.2rem" }}>📤</div>
+              <div>Export</div>
+            </Link>
+          )}
         </div>
       </div>
     </>

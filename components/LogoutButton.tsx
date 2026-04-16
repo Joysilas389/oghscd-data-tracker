@@ -8,9 +8,11 @@ export default function LogoutButton() {
     router.push("/login");
   }
   return (
-    <button onClick={handleLogout}
-      className="btn btn-sm btn-outline-light w-100"
-      style={{ fontSize: "0.75rem" }}>
+    <button
+      onClick={handleLogout}
+      className="btn btn-outline-light"
+      style={{ fontSize: "0.7rem", padding: "3px 10px", whiteSpace: "nowrap" }}
+      title="Sign Out">
       🚪 Sign Out
     </button>
   );

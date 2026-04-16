@@ -7,7 +7,7 @@ import ChangeRoleButton from "@/components/ChangeRoleButton";
 export default async function AdminUsersPage() {
   const session = await getSession();
   if (!session.userId) redirect("/login");
-  if (session.role !== "ADMIN") redirect("/dashboard");
+  if (session.role !== "ADMIN" && session.role !== "MANAGER") redirect("/dashboard");
 
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
@@ -19,36 +19,45 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
-      <Sidebar role={session.role} fullName={session.fullName} facilityName={session.facilityName} active="/admin/users" />
-      <div className="flex-grow-1 p-3 p-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
+      <Sidebar role={session.role} fullName={session.fullName}
+        facilityName={session.facilityName} active="/admin/users" />
+      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4"
+        style={{ background: "#f8f9fa", minWidth: 0 }}>
         <div className="mb-4 mt-5 mt-md-0">
           <h1 className="h4 fw-bold mb-0">User Management</h1>
           <p className="text-muted small">{users.length} registered user(s)</p>
         </div>
+
+        <div className="alert alert-info small mb-3">
+          <strong>Role Guide:</strong> Screeners add records. Managers review and approve.
+          Admins manage users. Upgrade a screener to Manager so they can access the Review Queue.
+        </div>
+
         <div className="card border-0 shadow-sm">
           <div className="card-body p-0">
             <div className="table-responsive">
-              <table className="table table-hover mb-0 small">
+              <table className="table table-hover mb-0 small align-middle">
                 <thead className="table-light">
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Cadre</th>
-                    <th>Facility</th>
                     <th>Role</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Change Role</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map(u => (
                     <tr key={u.id}>
-                      <td>{u.fullName}</td>
-                      <td>{u.email}</td>
+                      <td className="fw-semibold">{u.fullName}</td>
+                      <td className="text-muted" style={{ fontSize: "0.75rem" }}>{u.email}</td>
                       <td>{u.cadre}</td>
-                      <td>{u.facilityName}</td>
                       <td>
-                        <span className={`badge ${u.role === "ADMIN" ? "bg-danger" : u.role === "MANAGER" ? "bg-warning text-dark" : "bg-primary"}`}>
+                        <span className={`badge ${
+                          u.role === "ADMIN" ? "bg-danger" :
+                          u.role === "MANAGER" ? "bg-warning text-dark" :
+                          "bg-primary"}`}>
                           {u.role}
                         </span>
                       </td>
@@ -58,8 +67,10 @@ export default async function AdminUsersPage() {
                         </span>
                       </td>
                       <td>
-                        {u.id !== session.userId && (
+                        {u.id !== session.userId ? (
                           <ChangeRoleButton userId={u.id} currentRole={u.role} />
+                        ) : (
+                          <span className="text-muted small">You</span>
                         )}
                       </td>
                     </tr>
