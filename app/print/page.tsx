@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import PrintButton from "@/components/PrintButton";
 
 export default async function PrintPage() {
   const session = await getSession();
@@ -30,19 +31,14 @@ export default async function PrintPage() {
         body { font-family: Arial, sans-serif; }
       `}</style>
 
-      {/* Controls - visible always including mobile */}
       <div className="no-print d-flex flex-wrap align-items-center gap-2 p-3 bg-light border-bottom">
-        <button
-          onClick={() => window.print()}
-          style={{ background: "#1a5276", color: "#fff", border: "none",
-            padding: "8px 16px", borderRadius: 6, cursor: "pointer",
-            fontSize: "0.9rem" }}>
-          🖨️ Print / Save as PDF
-        </button>
+        <PrintButton />
         <Link href="/reports"
-          style={{ background: "#6c757d", color: "#fff", border: "none",
+          style={{
+            background: "#6c757d", color: "#fff", border: "none",
             padding: "8px 16px", borderRadius: 6, textDecoration: "none",
-            fontSize: "0.9rem" }}>
+            fontSize: "0.9rem"
+          }}>
           ← Back to Reports
         </Link>
         <span style={{ fontSize: "0.8rem", color: "#666" }}>
@@ -51,7 +47,6 @@ export default async function PrintPage() {
       </div>
 
       <div className="container-fluid py-4 px-3 px-md-4">
-        {/* Header */}
         <div className="text-center mb-4">
           <h1 style={{ fontSize: "1.3rem", color: "#1a5276" }}>
             OGH SCD E-Tracker — Screening Report
@@ -68,7 +63,6 @@ export default async function PrintPage() {
           </div>
         </div>
 
-        {/* Summary Stats */}
         <div className="row g-2 mb-4">
           {[
             { label: "Total Screenings", value: screenings.length },
@@ -89,9 +83,9 @@ export default async function PrintPage() {
           ))}
         </div>
 
-        {/* Screenings Table - scrollable on mobile */}
         <div style={{ overflowX: "auto" }}>
-          <table className="table table-bordered table-sm" style={{ fontSize: "0.75rem", minWidth: 900 }}>
+          <table className="table table-bordered table-sm"
+            style={{ fontSize: "0.75rem", minWidth: 700 }}>
             <thead style={{ background: "#1a5276", color: "#fff" }}>
               <tr>
                 <th>#</th>
@@ -136,7 +130,9 @@ export default async function PrintPage() {
                   <td style={{ fontSize: "0.7rem" }}>{s.screeningResult}</td>
                   <td>{s.confirmatoryAction}</td>
                   <td>
-                    <span style={{ color: s.treatmentStarted ? "green" : "red", fontWeight: "bold" }}>
+                    <span style={{
+                      color: s.treatmentStarted ? "green" : "red", fontWeight: "bold"
+                    }}>
                       {s.treatmentStarted ? "Yes" : "No"}
                     </span>
                   </td>
@@ -159,7 +155,6 @@ export default async function PrintPage() {
           </table>
         </div>
 
-        {/* Footer */}
         <div className="mt-4 pt-3 border-top text-center"
           style={{ fontSize: "0.75rem", color: "#666" }}>
           <p className="mb-1">

@@ -19,10 +19,40 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SCD Tracker" />
         <link rel="manifest" href="/manifest.json" />
+        <style>{`
+          * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
+          input, textarea, select {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+          }
+        `}</style>
       </head>
       <body>
         {children}
         <PWAInstall />
+        <script dangerouslySetInnerHTML={{ __html: `
+          // Disable right click
+          document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+          });
+          // Disable common screenshot shortcuts
+          document.addEventListener('keydown', function(e) {
+            if (
+              e.key === 'PrintScreen' ||
+              (e.ctrlKey && e.shiftKey && e.key === 'S') ||
+              (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5'))
+            ) {
+              e.preventDefault();
+            }
+          });
+        `}} />
       </body>
     </html>
   );
