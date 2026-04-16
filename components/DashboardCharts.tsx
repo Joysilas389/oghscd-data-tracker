@@ -3,15 +3,31 @@ import { useEffect, useRef } from "react";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
-interface ChartData {
-  results: { label: string; value: number }[];
-  types: { label: string; value: number }[];
-  statuses: { label: string; value: number }[];
-  sexes: { label: string; value: number }[];
-  trend: { day: string; count: number }[];
+interface Props {
+  trendData: { label: string; count: number }[];
+  resultCounts: { label: string; count: number }[];
+  typeCounts: { label: string; count: number }[];
+  statusCounts: { label: string; count: number }[];
+  localityCounts: { label: string; count: number }[];
+  treatmentCounts: { label: string; count: number }[];
+  sexCounts: { label: string; count: number }[];
+  filterLabel: string;
 }
 
-function useChart(ref: React.RefObject<HTMLCanvasElement | null>, type: string, labels: string[], data: number[], colors: string[], label: string) {
+const COLORS = [
+  "#1a5276","#117a8b","#198754","#856404",
+  "#d63384","#6f42c1","#0d6efd","#dc3545",
+  "#fd7e14","#0dcaf0","#20c997","#ffc107",
+];
+
+function useChart(
+  ref: React.RefObject<HTMLCanvasElement | null>,
+  type: string,
+  labels: string[],
+  data: number[],
+  colors: string[],
+  label: string
+) {
   useEffect(() => {
     if (!ref.current) return;
     const ctx = ref.current.getContext("2d");
@@ -40,129 +56,81 @@ function useChart(ref: React.RefObject<HTMLCanvasElement | null>, type: string, 
   }, []);
 }
 
-export default function DashboardCharts({ data }: { data: ChartData }) {
+export default function DashboardCharts({
+  trendData, resultCounts, typeCounts, statusCounts,
+  localityCounts, treatmentCounts, sexCounts, filterLabel,
+}: Props) {
   const trendRef = useRef<HTMLCanvasElement>(null);
-  const typeRef = useRef<HTMLCanvasElement>(null);
   const resultRef = useRef<HTMLCanvasElement>(null);
+  const typeRef = useRef<HTMLCanvasElement>(null);
   const statusRef = useRef<HTMLCanvasElement>(null);
+  const localityRef = useRef<HTMLCanvasElement>(null);
+  const treatmentRef = useRef<HTMLCanvasElement>(null);
   const sexRef = useRef<HTMLCanvasElement>(null);
 
-  const COLORS = ["#1a5276","#117a8b","#198754","#856404","#d63384","#6f42c1","#0d6efd","#dc3545"];
+  useChart(trendRef, "line",
+    trendData.map(d => d.label),
+    trendData.map(d => d.count),
+    [COLORS[0]], "Screenings");
 
-  useEffect(() => {
-    if (!trendRef.current) return;
-    const ctx = trendRef.current.getContext("2d");
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: data.trend.map(d => d.day),
-        datasets: [{ label: "Screenings", data: data.trend.map(d => d.count),
-          borderColor: "#1a5276", backgroundColor: "rgba(26,82,118,0.1)",
-          fill: true, tension: 0.3 }],
-      },
-      options: { responsive: true, plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } },
-    });
-    return () => chart.destroy();
-  }, []);
+  useChart(resultRef, "bar",
+    resultCounts.map(d => d.label),
+    resultCounts.map(d => d.count),
+    COLORS, "Results");
 
-  useEffect(() => {
-    if (!typeRef.current) return;
-    const ctx = typeRef.current.getContext("2d");
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: data.types.map(d => d.label),
-        datasets: [{ data: data.types.map(d => d.value),
-          backgroundColor: ["#0d6efd","#d63384"] }],
-      },
-      options: { responsive: true },
-    });
-    return () => chart.destroy();
-  }, []);
+  useChart(typeRef, "doughnut",
+    typeCounts.map(d => d.label === "CATCH_UP" ? "Catch-Up" : "Newborn"),
+    typeCounts.map(d => d.count),
+    [COLORS[0], COLORS[2]], "Type");
 
-  useEffect(() => {
-    if (!resultRef.current) return;
-    const ctx = resultRef.current.getContext("2d");
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: data.results.map(d => d.label.length > 20 ? d.label.slice(0,18)+"…" : d.label),
-        datasets: [{ label: "Count", data: data.results.map(d => d.value),
-          backgroundColor: COLORS }],
-      },
-      options: { responsive: true, plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } },
-    });
-    return () => chart.destroy();
-  }, []);
+  useChart(statusRef, "doughnut",
+    statusCounts.map(d => d.label),
+    statusCounts.map(d => d.count),
+    [COLORS[2], COLORS[7], COLORS[4], COLORS[1]], "Status");
 
-  useEffect(() => {
-    if (!statusRef.current) return;
-    const ctx = statusRef.current.getContext("2d");
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: data.statuses.map(d => d.label),
-        datasets: [{ data: data.statuses.map(d => d.value),
-          backgroundColor: ["#ffc107","#198754","#dc3545","#0dcaf0"] }],
-      },
-      options: { responsive: true },
-    });
-    return () => chart.destroy();
-  }, []);
+  useChart(localityRef, "bar",
+    localityCounts.map(d => d.label),
+    localityCounts.map(d => d.count),
+    COLORS, "Locality");
 
-  useEffect(() => {
-    if (!sexRef.current) return;
-    const ctx = sexRef.current.getContext("2d");
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: data.sexes.map(d => d.label),
-        datasets: [{ data: data.sexes.map(d => d.value),
-          backgroundColor: ["#0d6efd","#d63384"] }],
-      },
-      options: { responsive: true },
-    });
-    return () => chart.destroy();
-  }, []);
+  useChart(treatmentRef, "doughnut",
+    treatmentCounts.map(d => d.label),
+    treatmentCounts.map(d => d.count),
+    [COLORS[2], COLORS[7]], "Treatment");
+
+  useChart(sexRef, "doughnut",
+    sexCounts.map(d => d.label),
+    sexCounts.map(d => d.count),
+    [COLORS[0], COLORS[4], COLORS[1]], "Sex");
+
+  const charts = [
+    { title: `📈 7-Day Trend`, ref: trendRef },
+    { title: `🔬 Results Breakdown`, ref: resultRef },
+    { title: `🍩 Screening Type`, ref: typeRef },
+    { title: `✅ Review Status`, ref: statusRef },
+    { title: `📍 Top Localities`, ref: localityRef },
+    { title: `💊 Treatment Status`, ref: treatmentRef },
+    { title: `👥 Sex Distribution`, ref: sexRef },
+  ];
 
   return (
-    <div className="row g-3">
-      <div className="col-12 col-md-6">
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white small fw-semibold">📈 Screenings — Last 7 Days</div>
-          <div className="card-body"><canvas ref={trendRef} /></div>
-        </div>
+    <div>
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <h6 className="fw-semibold mb-0">Charts — {filterLabel}</h6>
       </div>
-      <div className="col-12 col-md-6">
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white small fw-semibold">📊 Results Breakdown</div>
-          <div className="card-body"><canvas ref={resultRef} /></div>
-        </div>
-      </div>
-      <div className="col-6 col-md-4">
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white small fw-semibold">🔵 Screening Type</div>
-          <div className="card-body"><canvas ref={typeRef} /></div>
-        </div>
-      </div>
-      <div className="col-6 col-md-4">
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white small fw-semibold">🔍 Review Status</div>
-          <div className="card-body"><canvas ref={statusRef} /></div>
-        </div>
-      </div>
-      <div className="col-6 col-md-4">
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white small fw-semibold">👥 Sex Distribution</div>
-          <div className="card-body"><canvas ref={sexRef} /></div>
-        </div>
+      <div className="row g-3">
+        {charts.map(chart => (
+          <div key={chart.title} className="col-12 col-md-6">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-white small fw-semibold py-2">
+                {chart.title}
+              </div>
+              <div className="card-body p-3">
+                <canvas ref={chart.ref} />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
