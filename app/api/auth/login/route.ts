@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { verifyPassword } from "@/lib/auth";
+import { verifyPassword, createAuditLog } from "@/lib/auth";
 import { getSession } from "@/lib/session";
 import { checkRateLimit } from "@/lib/ratelimit";
 
@@ -65,6 +65,15 @@ export async function POST(req: NextRequest) {
     session.fullName = user.fullName;
     session.facilityName = user.facilityName;
     await session.save();
+
+    await createAuditLog({
+      actorId: user.id,
+      actionType: "LOGIN",
+      entityType: "User",
+      entityId: user.id,
+      ipAddress: ip,
+      userAgent: req.headers.get("user-agent") ?? undefined,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

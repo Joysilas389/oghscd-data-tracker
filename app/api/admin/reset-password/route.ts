@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, createAuditLog } from "@/lib/auth";
 import { sendEmail, passwordResetEmailHtml } from "@/lib/email";
 import { z } from "zod";
 
@@ -33,6 +33,15 @@ export async function POST(req: NextRequest) {
   await prisma.user.update({
     where: { id: parsed.data.userId },
     data: { passwordHash: hash, failedLogins: 0, lockedUntil: null },
+  });
+
+  await createAuditLog({
+    actorId: session.userId,
+    actionType: "RESET_PASSWORD",
+    entityType: "User",
+    entityId: parsed.data.userId,
+    ipAddress: req.headers.get("x-forwarded-for") ?? "unknown",
+    afterJson: { targetUser: user.fullName },
   });
 
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
+import { createAuditLog } from "@/lib/auth";
 import { z } from "zod";
 
 const Schema = z.object({ userId: z.string() });
@@ -25,6 +26,15 @@ export async function POST(req: NextRequest) {
   });
 
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  await createAuditLog({
+    actorId: session.userId,
+    actionType: "DELETE",
+    entityType: "User",
+    entityId: parsed.data.userId,
+    ipAddress: req.headers.get("x-forwarded-for") ?? "unknown",
+    afterJson: { deletedUser: user.fullName, role: user.role },
+  });
 
   await prisma.user.delete({ where: { id: parsed.data.userId } });
 

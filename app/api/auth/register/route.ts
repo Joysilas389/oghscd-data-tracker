@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, createAuditLog } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { sendEmail, welcomeEmailHtml } from "@/lib/email";
 
@@ -37,8 +37,17 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: { fullName, cadre, facilityName, email, passwordHash, role: "SCREENER" },
+    });
+
+    await createAuditLog({
+      actorId: user.id,
+      actionType: "REGISTER",
+      entityType: "User",
+      entityId: user.id,
+      ipAddress: ip,
+      userAgent: req.headers.get("user-agent") ?? undefined,
     });
 
     try {
