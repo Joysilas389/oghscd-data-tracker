@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
@@ -26,69 +26,174 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Sheet 1: All screening records - every field
-  const screeningRows = screenings.map((s, i) => ({
-    "No.": i + 1,
-    "Patient ID": s.patient.patientCode,
-    "First Name": s.patient.firstName,
-    "Last Name": s.patient.lastName,
-    "Sex": s.patient.sex,
-    "Date of Birth": new Date(s.patient.dateOfBirth).toLocaleDateString("en-GB"),
-    "Phone Number": isManager ? s.patient.phoneNumber : "***masked***",
-    "Ethnicity": s.patient.ethnicity ?? "",
-    "NHIS Status": s.patient.nhisStatus,
-    "Address": isManager ? (s.patient.address ?? "") : "***masked***",
-    "District": s.patient.district ?? "",
-    "Locality / Community": s.patient.locality ?? "",
-    "Screening Date": new Date(s.screeningDatetime).toLocaleDateString("en-GB"),
-    "Screening Time": new Date(s.screeningDatetime).toLocaleTimeString("en-GB"),
-    "Screening Type": s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn",
-    "Screening Result (Hemotype SC)": s.screeningResult,
-    "Confirmed Test Done": s.confirmedTest ? "Yes" : "No",
-    "Confirmed Result": s.confirmedResult ?? "",
-    "Confirmatory Action": s.confirmatoryAction,
-    "Remarks": isManager ? (s.remarks ?? "") : "",
-    "Treatment Started": s.treatmentStarted ? "Yes" : "No",
-    "Treatment Start Date": s.treatmentStartDate
-      ? new Date(s.treatmentStartDate).toLocaleDateString("en-GB") : "",
-    "Medication / Plan": isManager ? (s.medicationPlan ?? "") : "",
-    "Treatment Notes": isManager ? (s.treatmentNotes ?? "") : "",
-    "Referral Notes": isManager ? (s.referralNotes ?? "") : "",
-    "Facility Name": s.facilityName ?? "",
-    "Entered By": s.enteredBy.fullName,
-    "Cadre": s.enteredBy.cadre,
-    "Review Status": s.reviewStatus,
-    "Review Note": s.reviewNote ?? "",
-    "Reviewed By": s.reviewedBy?.fullName ?? "",
-    "Reviewed At": s.reviewedAt
-      ? new Date(s.reviewedAt).toLocaleString("en-GB") : "",
-  }));
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "OGH SCD E-Tracker";
+  wb.created = new Date();
 
-  // Sheet 2: Patient registry
-  const patientRows = patients.map((p, i) => ({
-    "No.": i + 1,
-    "Patient ID": p.patientCode,
-    "First Name": p.firstName,
-    "Last Name": p.lastName,
-    "Sex": p.sex,
-    "Date of Birth": new Date(p.dateOfBirth).toLocaleDateString("en-GB"),
-    "Phone": isManager ? p.phoneNumber : "***masked***",
-    "Ethnicity": p.ethnicity ?? "",
-    "NHIS Status": p.nhisStatus,
-    "District": p.district ?? "",
-    "Locality": p.locality ?? "",
-    "Total Screening Visits": p._count.screenings,
-    "Registered On": new Date(p.createdAt).toLocaleDateString("en-GB"),
-  }));
+  // Header style
+  const headerStyle: Partial<ExcelJS.Style> = {
+    font: { bold: true, color: { argb: "FFFFFFFF" } },
+    fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FF1A5276" } },
+    alignment: { horizontal: "center" },
+    border: {
+      bottom: { style: "thin", color: { argb: "FF000000" } },
+    },
+  };
 
-  // Sheet 3: Summary statistics
+  // Sheet 1: Screenings
+  const ws1 = wb.addWorksheet("Screenings");
+  ws1.columns = [
+    { header: "No.", key: "no", width: 5 },
+    { header: "Patient ID", key: "patientId", width: 20 },
+    { header: "First Name", key: "firstName", width: 15 },
+    { header: "Last Name", key: "lastName", width: 15 },
+    { header: "Sex", key: "sex", width: 8 },
+    { header: "Date of Birth", key: "dob", width: 14 },
+    { header: "Phone Number", key: "phone", width: 15 },
+    { header: "Ethnicity", key: "ethnicity", width: 12 },
+    { header: "NHIS Status", key: "nhis", width: 12 },
+    { header: "Address", key: "address", width: 20 },
+    { header: "District", key: "district", width: 15 },
+    { header: "Locality", key: "locality", width: 15 },
+    { header: "Screening Date", key: "screenDate", width: 14 },
+    { header: "Screening Time", key: "screenTime", width: 14 },
+    { header: "Screening Type", key: "screenType", width: 14 },
+    { header: "Screening Result (Hemotype SC)", key: "result", width: 30 },
+    { header: "Confirmed Test", key: "confirmedTest", width: 14 },
+    { header: "Confirmed Result", key: "confirmedResult", width: 16 },
+    { header: "Confirmatory Action", key: "confirmatoryAction", width: 20 },
+    { header: "Remarks", key: "remarks", width: 25 },
+    { header: "Treatment Started", key: "treatment", width: 16 },
+    { header: "Treatment Start Date", key: "treatDate", width: 18 },
+    { header: "Medication / Plan", key: "medication", width: 20 },
+    { header: "Treatment Notes", key: "treatNotes", width: 20 },
+    { header: "Referral Notes", key: "referralNotes", width: 20 },
+    { header: "Facility", key: "facility", width: 20 },
+    { header: "Entered By", key: "enteredBy", width: 18 },
+    { header: "Cadre", key: "cadre", width: 18 },
+    { header: "Review Status", key: "reviewStatus", width: 14 },
+    { header: "Review Note", key: "reviewNote", width: 20 },
+    { header: "Reviewed By", key: "reviewedBy", width: 18 },
+    { header: "Reviewed At", key: "reviewedAt", width: 18 },
+  ];
+
+  ws1.getRow(1).eachCell(cell => { Object.assign(cell, headerStyle); });
+
+  screenings.forEach((s, i) => {
+    ws1.addRow({
+      no: i + 1,
+      patientId: s.patient.patientCode,
+      firstName: s.patient.firstName,
+      lastName: s.patient.lastName,
+      sex: s.patient.sex,
+      dob: new Date(s.patient.dateOfBirth).toLocaleDateString("en-GB"),
+      phone: isManager ? s.patient.phoneNumber : "***masked***",
+      ethnicity: s.patient.ethnicity ?? "",
+      nhis: s.patient.nhisStatus,
+      address: isManager ? (s.patient.address ?? "") : "***masked***",
+      district: s.patient.district ?? "",
+      locality: s.patient.locality ?? "",
+      screenDate: new Date(s.screeningDatetime).toLocaleDateString("en-GB"),
+      screenTime: new Date(s.screeningDatetime).toLocaleTimeString("en-GB"),
+      screenType: s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn",
+      result: s.screeningResult,
+      confirmedTest: s.confirmedTest ? "Yes" : "No",
+      confirmedResult: s.confirmedResult ?? "",
+      confirmatoryAction: s.confirmatoryAction,
+      remarks: isManager ? (s.remarks ?? "") : "",
+      treatment: s.treatmentStarted ? "Yes" : "No",
+      treatDate: s.treatmentStartDate
+        ? new Date(s.treatmentStartDate).toLocaleDateString("en-GB") : "",
+      medication: isManager ? (s.medicationPlan ?? "") : "",
+      treatNotes: isManager ? (s.treatmentNotes ?? "") : "",
+      referralNotes: isManager ? (s.referralNotes ?? "") : "",
+      facility: s.facilityName ?? "",
+      enteredBy: s.enteredBy.fullName,
+      cadre: s.enteredBy.cadre,
+      reviewStatus: s.reviewStatus,
+      reviewNote: s.reviewNote ?? "",
+      reviewedBy: s.reviewedBy?.fullName ?? "",
+      reviewedAt: s.reviewedAt
+        ? new Date(s.reviewedAt).toLocaleString("en-GB") : "",
+    });
+  });
+
+  // Alternate row colors
+  ws1.eachRow((row, rowNumber) => {
+    if (rowNumber > 1) {
+      row.eachCell(cell => {
+        cell.fill = {
+          type: "pattern", pattern: "solid",
+          fgColor: { argb: rowNumber % 2 === 0 ? "FFF2F8FF" : "FFFFFFFF" },
+        };
+      });
+    }
+  });
+
+  // Sheet 2: Patients
+  const ws2 = wb.addWorksheet("Patients");
+  ws2.columns = [
+    { header: "No.", key: "no", width: 5 },
+    { header: "Patient ID", key: "patientId", width: 20 },
+    { header: "First Name", key: "firstName", width: 15 },
+    { header: "Last Name", key: "lastName", width: 15 },
+    { header: "Sex", key: "sex", width: 8 },
+    { header: "Date of Birth", key: "dob", width: 14 },
+    { header: "Phone", key: "phone", width: 15 },
+    { header: "Ethnicity", key: "ethnicity", width: 12 },
+    { header: "NHIS Status", key: "nhis", width: 12 },
+    { header: "District", key: "district", width: 15 },
+    { header: "Locality", key: "locality", width: 15 },
+    { header: "Total Visits", key: "visits", width: 12 },
+    { header: "Registered On", key: "registeredOn", width: 14 },
+  ];
+
+  ws2.getRow(1).eachCell(cell => { Object.assign(cell, headerStyle); });
+
+  patients.forEach((p, i) => {
+    ws2.addRow({
+      no: i + 1,
+      patientId: p.patientCode,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      sex: p.sex,
+      dob: new Date(p.dateOfBirth).toLocaleDateString("en-GB"),
+      phone: isManager ? p.phoneNumber : "***masked***",
+      ethnicity: p.ethnicity ?? "",
+      nhis: p.nhisStatus,
+      district: p.district ?? "",
+      locality: p.locality ?? "",
+      visits: p._count.screenings,
+      registeredOn: new Date(p.createdAt).toLocaleDateString("en-GB"),
+    });
+  });
+
+  ws2.eachRow((row, rowNumber) => {
+    if (rowNumber > 1) {
+      row.eachCell(cell => {
+        cell.fill = {
+          type: "pattern", pattern: "solid",
+          fgColor: { argb: rowNumber % 2 === 0 ? "FFF2F8FF" : "FFFFFFFF" },
+        };
+      });
+    }
+  });
+
+  // Sheet 3: Summary Statistics
+  const ws3 = wb.addWorksheet("Summary Statistics");
+  ws3.columns = [
+    { header: "Category", key: "category", width: 20 },
+    { header: "Label", key: "label", width: 30 },
+    { header: "Count", key: "count", width: 10 },
+  ];
+  ws3.getRow(1).eachCell(cell => { Object.assign(cell, headerStyle); });
+
   const total = screenings.length;
   const catchUp = screenings.filter(s => s.screeningType === "CATCH_UP").length;
   const newborn = screenings.filter(s => s.screeningType === "NEWBORN").length;
   const male = screenings.filter(s => s.patient.sex === "MALE").length;
   const female = screenings.filter(s => s.patient.sex === "FEMALE").length;
   const treatYes = screenings.filter(s => s.treatmentStarted).length;
-  const treatNo = total - treatYes;
   const pending = screenings.filter(s => s.reviewStatus === "PENDING").length;
   const approved = screenings.filter(s => s.reviewStatus === "APPROVED").length;
   const flagged = screenings.filter(s => s.reviewStatus === "FLAGGED").length;
@@ -99,33 +204,40 @@ export async function GET(req: NextRequest) {
     resultCounts[s.screeningResult] = (resultCounts[s.screeningResult] || 0) + 1;
   });
 
-  const summaryRows = [
-    { "Category": "SCREENING TYPE", "Label": "Catch-Up", "Count": catchUp },
-    { "Category": "SCREENING TYPE", "Label": "Newborn", "Count": newborn },
-    { "Category": "SCREENING TYPE", "Label": "TOTAL", "Count": total },
-    { "Category": "", "Label": "", "Count": "" },
-    { "Category": "SEX", "Label": "Male", "Count": male },
-    { "Category": "SEX", "Label": "Female", "Count": female },
-    { "Category": "", "Label": "", "Count": "" },
-    { "Category": "TREATMENT", "Label": "Started", "Count": treatYes },
-    { "Category": "TREATMENT", "Label": "Not Started", "Count": treatNo },
-    { "Category": "", "Label": "", "Count": "" },
-    { "Category": "REVIEW STATUS", "Label": "Pending", "Count": pending },
-    { "Category": "REVIEW STATUS", "Label": "Approved", "Count": approved },
-    { "Category": "REVIEW STATUS", "Label": "Flagged", "Count": flagged },
-    { "Category": "REVIEW STATUS", "Label": "Corrected", "Count": corrected },
-    { "Category": "", "Label": "", "Count": "" },
-    ...Object.entries(resultCounts).map(([label, count]) => ({
-      "Category": "RESULT",
-      "Label": label,
-      "Count": count,
-    })),
-    { "Category": "", "Label": "", "Count": "" },
-    { "Category": "EXPORT INFO", "Label": "Generated By", "Count": session.fullName },
-    { "Category": "EXPORT INFO", "Label": "Date", "Count": new Date().toLocaleString("en-GB") },
+  const summaryData = [
+    ["SCREENING TYPE", "Catch-Up", catchUp],
+    ["SCREENING TYPE", "Newborn", newborn],
+    ["SCREENING TYPE", "TOTAL", total],
+    ["", "", ""],
+    ["SEX", "Male", male],
+    ["SEX", "Female", female],
+    ["", "", ""],
+    ["TREATMENT", "Started", treatYes],
+    ["TREATMENT", "Not Started", total - treatYes],
+    ["", "", ""],
+    ["REVIEW STATUS", "Pending", pending],
+    ["REVIEW STATUS", "Approved", approved],
+    ["REVIEW STATUS", "Flagged", flagged],
+    ["REVIEW STATUS", "Corrected", corrected],
+    ["", "", ""],
+    ...Object.entries(resultCounts).map(([label, count]) => ["RESULT", label, count]),
+    ["", "", ""],
+    ["EXPORT INFO", "Generated By", session.fullName],
+    ["EXPORT INFO", "Date", new Date().toLocaleString("en-GB")],
   ];
 
-  // Sheet 4: Monthly trend
+  summaryData.forEach(([category, label, count]) => {
+    ws3.addRow({ category, label, count });
+  });
+
+  // Sheet 4: Monthly Trend
+  const ws4 = wb.addWorksheet("Monthly Trend");
+  ws4.columns = [
+    { header: "Month", key: "month", width: 15 },
+    { header: "Screenings", key: "count", width: 12 },
+  ];
+  ws4.getRow(1).eachCell(cell => { Object.assign(cell, headerStyle); });
+
   const monthlyData: Record<string, number> = {};
   screenings.forEach(s => {
     const month = new Date(s.screeningDatetime).toLocaleDateString("en-GB", {
@@ -133,34 +245,35 @@ export async function GET(req: NextRequest) {
     });
     monthlyData[month] = (monthlyData[month] || 0) + 1;
   });
-  const trendRows = Object.entries(monthlyData)
-    .map(([month, count]) => ({ "Month": month, "Screenings": count }));
 
-  // Sheet 5: Locality distribution
+  Object.entries(monthlyData).forEach(([month, count]) => {
+    ws4.addRow({ month, count });
+  });
+
+  // Sheet 5: Locality Distribution
+  const ws5 = wb.addWorksheet("Locality Distribution");
+  ws5.columns = [
+    { header: "Locality", key: "locality", width: 20 },
+    { header: "Screenings", key: "count", width: 12 },
+  ];
+  ws5.getRow(1).eachCell(cell => { Object.assign(cell, headerStyle); });
+
   const localityData: Record<string, number> = {};
   screenings.forEach(s => {
     const loc = s.patient.locality || "Unknown";
     localityData[loc] = (localityData[loc] || 0) + 1;
   });
-  const localityRows = Object.entries(localityData)
+
+  Object.entries(localityData)
     .sort(([, a], [, b]) => b - a)
-    .map(([locality, count]) => ({ "Locality": locality, "Screenings": count }));
+    .forEach(([locality, count]) => {
+      ws5.addRow({ locality, count });
+    });
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(screeningRows), "Screenings");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(patientRows), "Patients");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows as object[]), "Summary Statistics");
-  XLSX.utils.book_append_sheet(wb,
-    XLSX.utils.json_to_sheet(trendRows.length ? trendRows : [{ "Month": "No data", "Screenings": 0 }]),
-    "Monthly Trend");
-  XLSX.utils.book_append_sheet(wb,
-    XLSX.utils.json_to_sheet(localityRows.length ? localityRows : [{ "Locality": "No data", "Screenings": 0 }]),
-    "Locality Distribution");
-
-  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+  const buffer = await wb.xlsx.writeBuffer();
   const filename = `OGH-SCD-Report-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
-  return new NextResponse(buf, {
+  return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,
