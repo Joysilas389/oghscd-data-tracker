@@ -1,17 +1,18 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface Props {
   actionTypes: string[];
   entityTypes: string[];
+  selectedAction: string;
+  selectedEntity: string;
 }
 
-export default function AuditFilter({ actionTypes, entityTypes }: Props) {
+export default function AuditFilter({ actionTypes, entityTypes, selectedAction, selectedEntity }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [action, setAction] = useState(searchParams.get("action") || "");
-  const [entity, setEntity] = useState(searchParams.get("entity") || "");
+  const [action, setAction] = useState(selectedAction);
+  const [entity, setEntity] = useState(selectedEntity);
 
   function handleFilter() {
     const params = new URLSearchParams();
@@ -30,8 +31,8 @@ export default function AuditFilter({ actionTypes, entityTypes }: Props) {
   return (
     <div className="card border-0 shadow-sm mb-3">
       <div className="card-body p-3">
-        <div className="row g-2">
-          <div className="col-12 col-sm-5">
+        <div className="row g-2 align-items-end">
+          <div className="col-5 col-md-3">
             <label className="form-label small fw-semibold mb-1">Action</label>
             <select className="form-select form-select-sm"
               value={action} onChange={e => setAction(e.target.value)}>
@@ -41,7 +42,7 @@ export default function AuditFilter({ actionTypes, entityTypes }: Props) {
               ))}
             </select>
           </div>
-          <div className="col-12 col-sm-5">
+          <div className="col-5 col-md-3">
             <label className="form-label small fw-semibold mb-1">Entity</label>
             <select className="form-select form-select-sm"
               value={entity} onChange={e => setEntity(e.target.value)}>
@@ -51,20 +52,25 @@ export default function AuditFilter({ actionTypes, entityTypes }: Props) {
               ))}
             </select>
           </div>
-          <div className="col-12 col-sm-2 d-flex align-items-end gap-2">
+          <div className="col-2 col-md-2 d-flex gap-2">
             <button onClick={handleFilter}
-              className="btn btn-sm text-white flex-grow-1"
-              style={{ background: "#1a5276" }}>
+              className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
               Filter
             </button>
             {(action || entity) && (
               <button onClick={handleClear}
-                className="btn btn-sm btn-outline-secondary flex-grow-1">
+                className="btn btn-sm btn-outline-secondary">
                 Clear
               </button>
             )}
           </div>
         </div>
+        {(action || entity) && (
+          <div className="mt-2">
+            {action && <span className="badge bg-primary me-1">{action}</span>}
+            {entity && <span className="badge bg-secondary me-1">{entity}</span>}
+          </div>
+        )}
       </div>
     </div>
   );

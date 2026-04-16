@@ -77,7 +77,7 @@ export default async function AuditLogPage({
           </p>
         </div>
 
-        <AuditFilter
+        <AuditFilter selectedAction={selectedAction} selectedEntity={selectedEntity}
           actionTypes={actionTypes.map(a => a.actionType)}
           entityTypes={entityTypes.map(e => e.entityType)}
           
