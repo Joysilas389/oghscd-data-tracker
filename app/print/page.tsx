@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
+import Link from "next/link";
 
 export default async function PrintPage() {
   const session = await getSession();
@@ -25,26 +26,31 @@ export default async function PrintPage() {
           .no-print { display: none !important; }
           body { font-size: 11px; }
           table { font-size: 10px; }
-          .page-break { page-break-after: always; }
         }
         body { font-family: Arial, sans-serif; }
       `}</style>
 
-      {/* Print controls - hidden when printing */}
-      <div className="no-print d-flex align-items-center gap-3 p-3 bg-light border-bottom">
-        <button onClick={() => window.print()}
-          className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
+      {/* Controls - visible always including mobile */}
+      <div className="no-print d-flex flex-wrap align-items-center gap-2 p-3 bg-light border-bottom">
+        <button
+          onClick={() => window.print()}
+          style={{ background: "#1a5276", color: "#fff", border: "none",
+            padding: "8px 16px", borderRadius: 6, cursor: "pointer",
+            fontSize: "0.9rem" }}>
           🖨️ Print / Save as PDF
         </button>
-        <a href="/dashboard" className="btn btn-sm btn-outline-secondary">
-          ← Back to Dashboard
-        </a>
-        <span className="text-muted small">
-          Tip: Use your browser Print dialog to save as PDF
+        <Link href="/reports"
+          style={{ background: "#6c757d", color: "#fff", border: "none",
+            padding: "8px 16px", borderRadius: 6, textDecoration: "none",
+            fontSize: "0.9rem" }}>
+          ← Back to Reports
+        </Link>
+        <span style={{ fontSize: "0.8rem", color: "#666" }}>
+          On mobile: tap Print then choose Save as PDF
         </span>
       </div>
 
-      <div className="container-fluid py-4 px-4">
+      <div className="container-fluid py-4 px-3 px-md-4">
         {/* Header */}
         <div className="text-center mb-4">
           <h1 style={{ fontSize: "1.3rem", color: "#1a5276" }}>
@@ -83,76 +89,75 @@ export default async function PrintPage() {
           ))}
         </div>
 
-        {/* Screenings Table */}
-        <table className="table table-bordered table-sm" style={{ fontSize: "0.75rem" }}>
-          <thead style={{ background: "#1a5276", color: "#fff" }}>
-            <tr>
-              <th>#</th>
-              <th>Patient ID</th>
-              <th>Name</th>
-              <th>Sex</th>
-              <th>DOB</th>
-              {isManager && <th>Phone</th>}
-              <th>Locality</th>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Result</th>
-              <th>Confirmatory</th>
-              <th>Treatment</th>
-              <th>Status</th>
-              <th>Entered By</th>
-              {isManager && <th>Reviewed By</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {screenings.map((s, i) => (
-              <tr key={s.id} style={{ background: i % 2 === 0 ? "#fff" : "#f8f9fa" }}>
-                <td>{i + 1}</td>
-                <td style={{ fontFamily: "monospace", fontSize: "0.7rem" }}>
-                  {s.patient.patientCode}
-                </td>
-                <td>{s.patient.firstName} {s.patient.lastName}</td>
-                <td>{s.patient.sex}</td>
-                <td>{new Date(s.patient.dateOfBirth).toLocaleDateString("en-GB")}</td>
-                {isManager && <td>{s.patient.phoneNumber || "—"}</td>}
-                <td>{s.patient.locality || "—"}</td>
-                <td>{new Date(s.screeningDatetime).toLocaleDateString("en-GB")}</td>
-                <td>
-                  <span style={{
-                    background: s.screeningType === "NEWBORN" ? "#0dcaf0" : "#0d6efd",
-                    color: s.screeningType === "NEWBORN" ? "#000" : "#fff",
-                    padding: "1px 4px", borderRadius: 3, fontSize: "0.65rem"
-                  }}>
-                    {s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
-                  </span>
-                </td>
-                <td style={{ fontSize: "0.7rem" }}>{s.screeningResult}</td>
-                <td>{s.confirmatoryAction}</td>
-                <td>
-                  <span style={{
-                    color: s.treatmentStarted ? "green" : "red",
-                    fontWeight: "bold"
-                  }}>
-                    {s.treatmentStarted ? "Yes" : "No"}
-                  </span>
-                </td>
-                <td>
-                  <span style={{
-                    background: s.reviewStatus === "APPROVED" ? "#198754" :
-                      s.reviewStatus === "PENDING" ? "#ffc107" :
-                      s.reviewStatus === "FLAGGED" ? "#dc3545" : "#0dcaf0",
-                    color: s.reviewStatus === "PENDING" ? "#000" : "#fff",
-                    padding: "1px 4px", borderRadius: 3, fontSize: "0.65rem"
-                  }}>
-                    {s.reviewStatus}
-                  </span>
-                </td>
-                <td>{s.enteredBy.fullName}</td>
-                {isManager && <td>{s.reviewedBy?.fullName || "—"}</td>}
+        {/* Screenings Table - scrollable on mobile */}
+        <div style={{ overflowX: "auto" }}>
+          <table className="table table-bordered table-sm" style={{ fontSize: "0.75rem", minWidth: 900 }}>
+            <thead style={{ background: "#1a5276", color: "#fff" }}>
+              <tr>
+                <th>#</th>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>DOB</th>
+                {isManager && <th>Phone</th>}
+                <th>Locality</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Result</th>
+                <th>Confirmatory</th>
+                <th>Treatment</th>
+                <th>Status</th>
+                <th>Entered By</th>
+                {isManager && <th>Reviewed By</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {screenings.map((s, i) => (
+                <tr key={s.id} style={{ background: i % 2 === 0 ? "#fff" : "#f8f9fa" }}>
+                  <td>{i + 1}</td>
+                  <td style={{ fontFamily: "monospace", fontSize: "0.7rem" }}>
+                    {s.patient.patientCode}
+                  </td>
+                  <td>{s.patient.firstName} {s.patient.lastName}</td>
+                  <td>{s.patient.sex}</td>
+                  <td>{new Date(s.patient.dateOfBirth).toLocaleDateString("en-GB")}</td>
+                  {isManager && <td>{s.patient.phoneNumber || "—"}</td>}
+                  <td>{s.patient.locality || "—"}</td>
+                  <td>{new Date(s.screeningDatetime).toLocaleDateString("en-GB")}</td>
+                  <td>
+                    <span style={{
+                      background: s.screeningType === "NEWBORN" ? "#0dcaf0" : "#0d6efd",
+                      color: s.screeningType === "NEWBORN" ? "#000" : "#fff",
+                      padding: "1px 4px", borderRadius: 3, fontSize: "0.65rem"
+                    }}>
+                      {s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
+                    </span>
+                  </td>
+                  <td style={{ fontSize: "0.7rem" }}>{s.screeningResult}</td>
+                  <td>{s.confirmatoryAction}</td>
+                  <td>
+                    <span style={{ color: s.treatmentStarted ? "green" : "red", fontWeight: "bold" }}>
+                      {s.treatmentStarted ? "Yes" : "No"}
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{
+                      background: s.reviewStatus === "APPROVED" ? "#198754" :
+                        s.reviewStatus === "PENDING" ? "#ffc107" :
+                        s.reviewStatus === "FLAGGED" ? "#dc3545" : "#0dcaf0",
+                      color: s.reviewStatus === "PENDING" ? "#000" : "#fff",
+                      padding: "1px 4px", borderRadius: 3, fontSize: "0.65rem"
+                    }}>
+                      {s.reviewStatus}
+                    </span>
+                  </td>
+                  <td>{s.enteredBy.fullName}</td>
+                  {isManager && <td>{s.reviewedBy?.fullName || "—"}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Footer */}
         <div className="mt-4 pt-3 border-top text-center"
@@ -163,7 +168,6 @@ export default async function PrintPage() {
           </p>
           <p className="mb-0">
             This report is confidential and intended for authorised personnel only.
-            Report generated: {new Date().toLocaleString("en-GB")}
           </p>
         </div>
       </div>

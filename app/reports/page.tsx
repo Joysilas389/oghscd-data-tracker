@@ -26,7 +26,7 @@ export default async function ReportsPage() {
                   {session.role === "SCREENER"
                     ? "Phone numbers masked for privacy."
                     : "Full data included (Manager/Admin)."}
-                  5 sheets included.
+                  {" "}5 sheets included.
                 </p>
                 <a href="/api/export/screenings"
                   className="btn text-white" style={{ background: "#1a5276" }}>
@@ -41,11 +41,10 @@ export default async function ReportsPage() {
               <div className="card-body p-4">
                 <h5 className="fw-semibold mb-1">🖨️ Print Report</h5>
                 <p className="text-muted small mb-3">
-                  Open a print-friendly view of all screenings.
-                  Can also save as PDF from browser.
+                  Opens a print-friendly view of all screenings.
+                  On mobile: tap the three dots menu in your browser then tap Print or Share to save as PDF.
                 </p>
-                <Link href="/print"
-                  className="btn btn-outline-secondary" target="_blank">
+                <Link href="/print" className="btn btn-outline-secondary">
                   Open Print View
                 </Link>
               </div>
