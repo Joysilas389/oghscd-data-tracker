@@ -77,8 +77,8 @@ export default async function DashboardPage({
   });
 
   const localityCounts = await prisma.screening.groupBy({
-    by: ["localityOfResidence"],
-    where: { ...baseWhere, localityOfResidence: { not: null } },
+    by: ["locality"],
+    where: { ...baseWhere, locality: { not: null } },
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
     take: 8,
@@ -217,7 +217,7 @@ export default async function DashboardPage({
             label: s.reviewStatus, count: s._count.id,
           }))}
           localityCounts={localityCounts.map(l => ({
-            label: l.localityOfResidence ?? "Unknown", count: l._count.id,
+            label: l.locality ?? "Unknown", count: l._count.id,
           }))}
           treatmentCounts={treatmentCounts.map(t => ({
             label: t.treatmentStarted ? "On Treatment" : "Not Started",
