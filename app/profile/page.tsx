@@ -17,9 +17,7 @@ export default async function ProfilePage() {
           <h1 className="h4 fw-bold mb-0">My Profile</h1>
           <p className="text-muted small">Manage your account details</p>
         </div>
-
         <div className="row g-4">
-          {/* Account info */}
           <div className="col-12 col-md-6">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white fw-semibold">Account Information</div>
@@ -55,8 +53,6 @@ export default async function ProfilePage() {
               </div>
             </div>
           </div>
-
-          {/* Change password */}
           <div className="col-12 col-md-6">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white fw-semibold">Change Password</div>

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { sendEmail, welcomeEmailHtml } from "@/lib/email";
 
 const Schema = z.object({
   fullName: z.string().min(2).max(100),
@@ -14,7 +15,6 @@ const Schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limit by IP - max 5 registrations per hour
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
     const limit = checkRateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
     if (!limit.allowed) {
@@ -40,6 +40,16 @@ export async function POST(req: NextRequest) {
     await prisma.user.create({
       data: { fullName, cadre, facilityName, email, passwordHash, role: "SCREENER" },
     });
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Welcome to OGH SCD E-Tracker",
+        html: welcomeEmailHtml(fullName),
+      });
+    } catch (emailErr) {
+      console.warn("Welcome email failed:", emailErr);
+    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {

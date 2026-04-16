@@ -12,7 +12,6 @@ const Schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limit by IP - max 10 attempts per 15 minutes
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
     const limit = checkRateLimit(`login:${ip}`, 10, 15 * 60 * 1000);
     if (!limit.allowed) {

@@ -1,4 +1,3 @@
-// In-memory rate limiter - no external service needed
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
 export function checkRateLimit(
@@ -15,22 +14,13 @@ export function checkRateLimit(
   }
 
   if (record.count >= maxAttempts) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetIn: record.resetAt - now,
-    };
+    return { allowed: false, remaining: 0, resetIn: record.resetAt - now };
   }
 
   record.count++;
-  return {
-    allowed: true,
-    remaining: maxAttempts - record.count,
-    resetIn: record.resetAt - now,
-  };
+  return { allowed: true, remaining: maxAttempts - record.count, resetIn: record.resetAt - now };
 }
 
-// Clean up old entries every 10 minutes
 setInterval(() => {
   const now = Date.now();
   attempts.forEach((value, key) => {
