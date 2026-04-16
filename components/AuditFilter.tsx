@@ -68,7 +68,7 @@ export default function AuditFilter({ actionTypes, entityTypes, selectedAction, 
         {(action || entity) && (
           <div className="mt-2">
             {action && <span className="badge bg-primary me-1">{action}</span>}
-            {entity && <span className="badge bg-secondary me-1">{entity}</span>}
+            {entity && <span className="badge bg-secondary">{entity}</span>}
           </div>
         )}
       </div>
