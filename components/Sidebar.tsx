@@ -12,33 +12,29 @@ interface Props {
 const baseLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
-  { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
+  { href: "/screenings/new", label: "New Screening", icon: "➕", highlight: true },
   { href: "/patients", label: "Patients", icon: "👥" },
   { href: "/reports", label: "Reports", icon: "📁" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/profile", label: "Profile", icon: "👤" },
-  { href: "/help", label: "Help", icon: "❓" },
-  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const managerLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
-  { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
+  { href: "/screenings/new", label: "New Screening", icon: "➕", highlight: true },
   { href: "/patients", label: "Patients", icon: "👥" },
   { href: "/review", label: "Review Queue", icon: "🔍" },
   { href: "/reports", label: "Reports", icon: "📁" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/profile", label: "Profile", icon: "👤" },
-  { href: "/help", label: "Help", icon: "❓" },
-  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const adminLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
-  { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
+  { href: "/screenings/new", label: "New Screening", icon: "➕", highlight: true },
   { href: "/patients", label: "Patients", icon: "👥" },
   { href: "/review", label: "Review Queue", icon: "🔍" },
   { href: "/reports", label: "Reports", icon: "📁" },
@@ -46,19 +42,14 @@ const adminLinks = [
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
   { href: "/profile", label: "Profile", icon: "👤" },
-  { href: "/help", label: "Help", icon: "❓" },
-  { href: "/help", label: "Help", icon: "📖" },
 ];
 
-// Mobile bottom nav - max 5 items per role
 const mobileScreenerLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/profile", label: "Profile", icon: "👤" },
-  { href: "/help", label: "Help", icon: "❓" },
-  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const mobileManagerLinks = [
@@ -67,8 +58,6 @@ const mobileManagerLinks = [
   { href: "/review", label: "Review", icon: "🔍" },
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/profile", label: "Profile", icon: "👤" },
-  { href: "/help", label: "Help", icon: "❓" },
-  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 const mobileAdminLinks = [
@@ -77,8 +66,6 @@ const mobileAdminLinks = [
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit", icon: "📜" },
   { href: "/profile", label: "Profile", icon: "👤" },
-  { href: "/help", label: "Help", icon: "❓" },
-  { href: "/help", label: "Help", icon: "📖" },
 ];
 
 export default function Sidebar({ role, fullName, facilityName, active }: Props) {
@@ -95,7 +82,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         style={{
           width: 230, minWidth: 230, background: "#1a5276",
           minHeight: "100vh", position: "sticky", top: 0,
-          height: "100vh", overflowY: "auto"
+          height: "100vh", overflowY: "auto",
         }}>
         <div className="text-white fw-bold mb-0" style={{ fontSize: "0.9rem" }}>
           OGH SCD E-Tracker
@@ -128,17 +115,17 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
       </div>
 
       {/* Mobile top bar */}
-      <div className="d-md-none d-flex align-items-center justify-content-between px-3 py-2"
+      <div className="d-md-none d-flex align-items-center justify-content-between px-3"
         style={{
           background: "#1a5276", color: "#fff",
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
-          height: 64,
+          height: 64, minHeight: 64,
         }}>
         <div>
           <div className="fw-bold" style={{ fontSize: "0.85rem" }}>OGH SCD E-Tracker</div>
           <div style={{ fontSize: "0.6rem", opacity: 0.7 }}>Oda Government Hospital</div>
         </div>
-        <div className="text-end">
+        <div className="text-end d-flex flex-column align-items-end gap-1">
           <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>{fullName}</div>
           <div style={{ fontSize: "0.6rem", opacity: 0.6 }}>{role}</div>
           <LogoutButton />
@@ -161,7 +148,6 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
               textDecoration: "none", flex: 1, height: "100%",
               background: item.highlight && active !== item.href
                 ? "rgba(255,255,255,0.1)" : "transparent",
-              borderRadius: item.highlight ? 8 : 0,
             }}>
             <span style={{ fontSize: "1.2rem" }}>{item.icon}</span>
             <span style={{ fontSize: "0.55rem", marginTop: 1 }}>{item.label}</span>
