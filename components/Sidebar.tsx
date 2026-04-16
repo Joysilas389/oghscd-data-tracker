@@ -129,6 +129,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         <div className="text-end">
           <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>{fullName}</div>
           <div style={{ fontSize: "0.6rem", opacity: 0.6 }}>{role}</div>
+          <LogoutButton />
         </div>
       </div>
 
