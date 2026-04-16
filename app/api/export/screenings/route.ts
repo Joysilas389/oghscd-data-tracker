@@ -1,0 +1,129 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/db";
+import * as XLSX from "xlsx";
+
+export async function GET(req: NextRequest) {
+  const session = await getSession();
+  if (!session.userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const isManager = session.role === "MANAGER" || session.role === "ADMIN";
+
+  const screenings = await prisma.screening.findMany({
+    where: { archivedAt: null },
+    orderBy: { screeningDatetime: "desc" },
+    include: {
+      patient: true,
+      enteredBy: { select: { fullName: true, cadre: true, facilityName: true } },
+      reviewedBy: { select: { fullName: true } },
+    },
+  });
+
+  const patients = await prisma.patient.findMany({
+    where: { archivedAt: null },
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { screenings: true } } },
+  });
+
+  // Sheet 1: Full Screening Records
+  const screeningRows = screenings.map((s, i) => ({
+    "No.": i + 1,
+    "Patient ID": s.patient.patientCode,
+    "First Name": s.patient.firstName,
+    "Last Name": s.patient.lastName,
+    "Sex": s.patient.sex,
+    "Date of Birth": new Date(s.patient.dateOfBirth).toLocaleDateString("en-GB"),
+    "Phone Number": isManager ? s.patient.phoneNumber : "***masked***",
+    "Ethnicity": s.patient.ethnicity ?? "",
+    "NHIS Status": s.patient.nhisStatus,
+    "Address": isManager ? (s.patient.address ?? "") : "***masked***",
+    "District": s.patient.district ?? "",
+    "Locality": s.patient.locality ?? "",
+    "Screening Date & Time": new Date(s.screeningDatetime).toLocaleString("en-GB"),
+    "Screening Type": s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn",
+    "Screening Result": s.screeningResult,
+    "Confirmed Test": s.confirmedTest ? "Yes" : "No",
+    "Confirmed Result": s.confirmedResult ?? "",
+    "Confirmatory Action": s.confirmatoryAction,
+    "Remarks": isManager ? (s.remarks ?? "") : "",
+    "Treatment Started": s.treatmentStarted ? "Yes" : "No",
+    "Treatment Start Date": s.treatmentStartDate ? new Date(s.treatmentStartDate).toLocaleDateString("en-GB") : "",
+    "Medication / Plan": isManager ? (s.medicationPlan ?? "") : "",
+    "Treatment Notes": isManager ? (s.treatmentNotes ?? "") : "",
+    "Referral Notes": isManager ? (s.referralNotes ?? "") : "",
+    "Facility": s.facilityName ?? "",
+    "Entered By": s.enteredBy.fullName,
+    "Cadre": s.enteredBy.cadre,
+    "Review Status": s.reviewStatus,
+    "Review Note": s.reviewNote ?? "",
+    "Reviewed By": s.reviewedBy?.fullName ?? "",
+    "Reviewed At": s.reviewedAt ? new Date(s.reviewedAt).toLocaleString("en-GB") : "",
+  }));
+
+  // Sheet 2: Patient Summary
+  const patientRows = patients.map((p, i) => ({
+    "No.": i + 1,
+    "Patient ID": p.patientCode,
+    "First Name": p.firstName,
+    "Last Name": p.lastName,
+    "Sex": p.sex,
+    "Date of Birth": new Date(p.dateOfBirth).toLocaleDateString("en-GB"),
+    "Phone": isManager ? p.phoneNumber : "***masked***",
+    "NHIS Status": p.nhisStatus,
+    "Ethnicity": p.ethnicity ?? "",
+    "District": p.district ?? "",
+    "Locality": p.locality ?? "",
+    "Total Screenings": p._count.screenings,
+    "Registered On": new Date(p.createdAt).toLocaleDateString("en-GB"),
+  }));
+
+  // Sheet 3: Summary Stats
+  const totalScreenings = screenings.length;
+  const catchUp = screenings.filter(s => s.screeningType === "CATCH_UP").length;
+  const newborn = screenings.filter(s => s.screeningType === "NEWBORN").length;
+  const treatmentYes = screenings.filter(s => s.treatmentStarted).length;
+  const pending = screenings.filter(s => s.reviewStatus === "PENDING").length;
+  const approved = screenings.filter(s => s.reviewStatus === "APPROVED").length;
+  const flagged = screenings.filter(s => s.reviewStatus === "FLAGGED").length;
+  const male = screenings.filter(s => s.patient.sex === "MALE").length;
+  const female = screenings.filter(s => s.patient.sex === "FEMALE").length;
+
+  const resultCounts: Record<string, number> = {};
+  screenings.forEach(s => {
+    resultCounts[s.screeningResult] = (resultCounts[s.screeningResult] || 0) + 1;
+  });
+
+  const summaryRows = [
+    { "Metric": "Total Screenings", "Value": totalScreenings },
+    { "Metric": "Catch-Up Screenings", "Value": catchUp },
+    { "Metric": "Newborn Screenings", "Value": newborn },
+    { "Metric": "Male Patients", "Value": male },
+    { "Metric": "Female Patients", "Value": female },
+    { "Metric": "Treatment Started", "Value": treatmentYes },
+    { "Metric": "Pending Review", "Value": pending },
+    { "Metric": "Approved", "Value": approved },
+    { "Metric": "Flagged", "Value": flagged },
+    { "Metric": "Total Patients", "Value": patients.length },
+    ...Object.entries(resultCounts).map(([result, count]) => ({
+      "Metric": `Result: ${result}`,
+      "Value": count,
+    })),
+    { "Metric": "Export Generated By", "Value": session.fullName },
+    { "Metric": "Export Date", "Value": new Date().toLocaleString("en-GB") },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(screeningRows), "Screenings");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(patientRows), "Patients");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), "Summary");
+
+  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+  const filename = `OGH-SCD-Report-${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+  return new NextResponse(buf, {
+    headers: {
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    },
+  });
+}

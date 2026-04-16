@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
+import DashboardCharts from "@/components/DashboardCharts";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -26,8 +28,52 @@ export default async function DashboardPage() {
     where: { archivedAt: null },
     orderBy: { createdAt: "desc" },
     take: 5,
-    include: { patient: { select: { patientCode: true, firstName: true, lastName: true } } },
+    include: { patient: { select: { patientCode: true, firstName: true, lastName: true, id: true } } },
   });
+
+  // Aggregated chart data - NO patient identifiers
+  const resultCounts = await prisma.screening.groupBy({
+    by: ["screeningResult"],
+    where: { archivedAt: null },
+    _count: { id: true },
+  });
+
+  const typeCounts = await prisma.screening.groupBy({
+    by: ["screeningType"],
+    where: { archivedAt: null },
+    _count: { id: true },
+  });
+
+  const statusCounts = await prisma.screening.groupBy({
+    by: ["reviewStatus"],
+    where: { archivedAt: null },
+    _count: { id: true },
+  });
+
+  const sexCounts = await prisma.patient.groupBy({
+    by: ["sex"],
+    where: { archivedAt: null },
+    _count: { id: true },
+  });
+
+  // Last 7 days trend
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().slice(0, 10);
+  });
+
+  const trendData = await Promise.all(
+    last7Days.map(async day => {
+      const start = new Date(day);
+      const end = new Date(day);
+      end.setDate(end.getDate() + 1);
+      const count = await prisma.screening.count({
+        where: { archivedAt: null, screeningDatetime: { gte: start, lt: end } },
+      });
+      return { day: day.slice(5), count };
+    })
+  );
 
   const kpis = [
     { label: "Total Screenings", value: total, color: "#1a5276", icon: "📋" },
@@ -47,67 +93,38 @@ export default async function DashboardPage() {
     CORRECTED: "bg-info text-dark",
   };
 
-  async function logout() {
-    "use server";
-    const { cookies } = await import("next/headers");
-    const { getIronSession } = await import("iron-session");
-    const { sessionOptions } = await import("@/lib/session");
-    const cookieStore = await cookies();
-    const sess = await getIronSession(cookieStore, sessionOptions);
-    sess.destroy();
-  }
+  const chartData = {
+    results: resultCounts.map(r => ({ label: r.screeningResult, value: r._count.id })),
+    types: typeCounts.map(t => ({ label: t.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn", value: t._count.id })),
+    statuses: statusCounts.map(s => ({ label: s.reviewStatus, value: s._count.id })),
+    sexes: sexCounts.map(s => ({ label: s.sex, value: s._count.id })),
+    trend: trendData,
+  };
 
   return (
-    <div className="d-flex" style={{minHeight:"100vh"}}>
-      {/* Sidebar */}
-      <div className="d-none d-md-flex flex-column p-3" style={{width:220,minWidth:220,background:"#1a5276",minHeight:"100vh"}}>
-        <div className="text-white fw-bold small mb-4">OGH SCD E-Tracker</div>
-        <nav className="nav flex-column flex-grow-1">
-          {[
-            {href:"/dashboard",label:"Dashboard",icon:"📊"},
-            {href:"/patients",label:"Patients",icon:"👥"},
-            {href:"/screenings/new",label:"New Screening",icon:"➕"},
-            {href:"/screenings",label:"All Screenings",icon:"📋"},
-            {href:"/reports",label:"Reports",icon:"📤"},
-            {href:"/profile",label:"My Profile",icon:"👤"},
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="nav-link d-flex align-items-center gap-2 small rounded mb-1"
-              style={{color:"rgba(255,255,255,0.8)",padding:"0.5rem 0.75rem"}}>
-              <span>{item.icon}</span><span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto pt-3 border-top border-secondary">
-          <div className="text-white-50 small text-truncate mb-1">{session.fullName}</div>
-          <div className="text-white-50 small mb-2">{session.role}</div>
-          <form action={logout}>
-            <button type="submit" className="btn btn-sm btn-outline-light w-100">Sign Out</button>
-          </form>
-        </div>
-      </div>
-
-      {/* Main */}
-      <div className="flex-grow-1 p-3 p-md-4" style={{background:"#f8f9fa",minWidth:0}}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
+    <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
+      <Sidebar role={session.role} fullName={session.fullName} facilityName={session.facilityName} active="/dashboard" />
+      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
+        <div className="d-flex justify-content-between align-items-center mb-4 mt-5 mt-md-0">
           <div>
             <h1 className="h4 fw-bold mb-0">Dashboard</h1>
-            <p className="text-muted small mb-0">Welcome, {session.fullName}</p>
+            <p className="text-muted small mb-0">Welcome, {session.fullName} · <span className={`badge ${session.role === "ADMIN" ? "bg-danger" : session.role === "MANAGER" ? "bg-warning text-dark" : "bg-primary"}`}>{session.role}</span></p>
           </div>
-          <Link href="/screenings/new" className="btn btn-sm text-white"
-            style={{background:"#1a5276"}}>+ New Screening</Link>
+          <Link href="/screenings/new" className="btn btn-sm text-white d-none d-md-block" style={{ background: "#1a5276" }}>
+            + New Screening
+          </Link>
         </div>
 
         {/* KPI Cards */}
         <div className="row g-3 mb-4">
           {kpis.map(k => (
-            <div key={k.label} className="col-6 col-md-4 col-lg-3">
-              <div className="card h-100 border-0 shadow-sm" style={{borderLeft:`4px solid ${k.color}!important`}}>
-                <div className="card-body p-3">
-                  <div className="d-flex justify-content-between">
+            <div key={k.label} className="col-6 col-md-3">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body p-3" style={{ borderLeft: `4px solid ${k.color}` }}>
+                  <div className="d-flex justify-content-between align-items-start">
                     <div>
                       <div className="text-muted small">{k.label}</div>
-                      <div className="h3 fw-bold mb-0" style={{color:k.color}}>{k.value}</div>
+                      <div className="h3 fw-bold mb-0" style={{ color: k.color }}>{k.value}</div>
                     </div>
                     <span className="fs-4">{k.icon}</span>
                   </div>
@@ -117,19 +134,20 @@ export default async function DashboardPage() {
           ))}
         </div>
 
+        {/* Charts */}
+        {total > 0 && <DashboardCharts data={chartData} />}
+
         {/* Recent screenings */}
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white d-flex justify-content-between align-items-center">
+        <div className="card border-0 shadow-sm mt-4">
+          <div className="card-header bg-white d-flex justify-content-between align-items-center py-2">
             <h5 className="mb-0 fw-semibold small">Recent Screenings</h5>
-            <Link href="/screenings" className="btn btn-sm btn-outline-secondary">View All</Link>
+            <Link href="/screenings" className="btn btn-sm btn-outline-secondary py-0">View All</Link>
           </div>
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover mb-0 small">
                 <thead className="table-light">
-                  <tr>
-                    <th>Patient ID</th><th>Name</th><th>Type</th><th>Date</th><th>Status</th><th></th>
-                  </tr>
+                  <tr><th>Patient ID</th><th>Name</th><th>Type</th><th>Date</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
                   {recent.length === 0 ? (
@@ -138,11 +156,17 @@ export default async function DashboardPage() {
                     </td></tr>
                   ) : recent.map(s => (
                     <tr key={s.id}>
-                      <td className="font-monospace small">{s.patient.patientCode}</td>
-                      <td>{s.patient.firstName} {s.patient.lastName}</td>
-                      <td><span className={`badge ${s.screeningType === "NEWBORN" ? "bg-info text-dark" : "bg-primary"}`}>
-                        {s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
-                      </span></td>
+                      <td className="font-monospace" style={{ fontSize: "0.75rem" }}>{s.patient.patientCode}</td>
+                      <td>
+                        <Link href={`/patients/${s.patient.id}`} className="text-decoration-none">
+                          {s.patient.firstName} {s.patient.lastName}
+                        </Link>
+                      </td>
+                      <td>
+                        <span className={`badge ${s.screeningType === "NEWBORN" ? "bg-info text-dark" : "bg-primary"}`}>
+                          {s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
+                        </span>
+                      </td>
                       <td>{new Date(s.screeningDatetime).toLocaleDateString("en-GB")}</td>
                       <td><span className={`badge ${statusClass[s.reviewStatus] ?? "bg-secondary"}`}>{s.reviewStatus}</span></td>
                       <td><Link href={`/screenings/${s.id}`} className="btn btn-sm btn-outline-primary py-0 px-2">View</Link></td>
@@ -157,7 +181,7 @@ export default async function DashboardPage() {
         {pending > 0 && (session.role === "MANAGER" || session.role === "ADMIN") && (
           <div className="alert alert-warning mt-3 small">
             ⏳ <strong>{pending}</strong> screening(s) awaiting review.{" "}
-            <Link href="/review" className="alert-link">Go to review queue →</Link>
+            <Link href="/review" className="alert-link">Go to Review Queue →</Link>
           </div>
         )}
       </div>

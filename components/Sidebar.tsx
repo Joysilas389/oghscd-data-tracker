@@ -37,7 +37,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         <nav className="nav flex-column flex-grow-1">
           {allLinks.map(item => (
             <Link key={item.href} href={item.href}
-              className={`nav-link d-flex align-items-center gap-2 small rounded mb-1 ${active === item.href ? "text-white fw-semibold" : ""}`}
+              className="nav-link d-flex align-items-center gap-2 small rounded mb-1"
               style={{
                 color: active === item.href ? "#fff" : "rgba(255,255,255,0.8)",
                 padding: "0.5rem 0.75rem",
@@ -56,15 +56,36 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         </div>
       </div>
 
-      {/* Mobile top bar */}
+      {/* Mobile top bar - NO "+ New" button, just logo and logout */}
       <div className="d-md-none w-100 d-flex align-items-center justify-content-between px-3 py-2"
         style={{ background: "#1a5276", position: "sticky", top: 0, zIndex: 1000 }}>
         <Link href="/dashboard" className="text-white fw-bold text-decoration-none" style={{ fontSize: "0.85rem" }}>
           OGH SCD E-Tracker
         </Link>
-        <div className="d-flex gap-2 align-items-center">
-          <Link href="/screenings/new" className="btn btn-sm btn-light py-0 px-2" style={{ fontSize: "0.75rem" }}>+ New</Link>
-          <LogoutButton />
+        <LogoutButton />
+      </div>
+
+      {/* Mobile bottom nav */}
+      <div className="d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow-sm"
+        style={{ zIndex: 999 }}>
+        <div className="d-flex justify-content-around py-2">
+          <Link href="/dashboard" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
+            <div className="fs-5">📊</div><div>Dashboard</div>
+          </Link>
+          <Link href="/patients" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
+            <div className="fs-5">👥</div><div>Patients</div>
+          </Link>
+          <Link href="/screenings/new" className="text-center text-decoration-none" style={{ fontSize: "0.6rem" }}>
+            <div className="fs-4 text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+              style={{ width: 40, height: 40, background: "#1a5276", marginTop: "-12px" }}>➕</div>
+            <div className="text-muted">New</div>
+          </Link>
+          <Link href="/screenings" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
+            <div className="fs-5">📋</div><div>Screenings</div>
+          </Link>
+          <Link href="/reports" className="text-center text-decoration-none text-muted" style={{ fontSize: "0.6rem" }}>
+            <div className="fs-5">📤</div><div>Export</div>
+          </Link>
         </div>
       </div>
     </>

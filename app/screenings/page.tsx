@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
+import ScreeningRowActions from "@/components/ScreeningRowActions";
 
 export default async function ScreeningsPage() {
   const session = await getSession();
@@ -14,6 +15,7 @@ export default async function ScreeningsPage() {
     take: 100,
     include: {
       patient: { select: { patientCode: true, firstName: true, lastName: true, id: true } },
+      enteredBy: { select: { id: true } },
     },
   });
 
@@ -27,7 +29,7 @@ export default async function ScreeningsPage() {
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
       <Sidebar role={session.role} fullName={session.fullName} facilityName={session.facilityName} active="/screenings" />
-      <div className="flex-grow-1 p-3 p-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
+      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
         <div className="d-flex justify-content-between align-items-center mb-4 mt-5 mt-md-0">
           <div>
             <h1 className="h4 fw-bold mb-0">All Screenings</h1>
@@ -49,7 +51,7 @@ export default async function ScreeningsPage() {
                     <th>Result</th>
                     <th>Date</th>
                     <th>Status</th>
-                    <th></th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -80,9 +82,11 @@ export default async function ScreeningsPage() {
                         </span>
                       </td>
                       <td>
-                        <Link href={`/screenings/${s.id}`} className="btn btn-sm btn-outline-primary py-0 px-2">
-                          View
-                        </Link>
+                        <ScreeningRowActions
+                          screeningId={s.id}
+                          canEdit={session.role !== "SCREENER" || s.enteredBy.id === session.userId}
+                          canDelete={session.role !== "SCREENER" || s.enteredBy.id === session.userId}
+                        />
                       </td>
                     </tr>
                   ))}
