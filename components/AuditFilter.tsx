@@ -1,20 +1,17 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Props {
-  currentAction: string;
-  currentEntity: string;
   actionTypes: string[];
   entityTypes: string[];
-  currentAction: string;
-  currentEntity: string;
 }
 
-export default function AuditFilter({ actionTypes, entityTypes, currentAction, currentEntity }: Props) {
+function AuditFilterInner({ actionTypes, entityTypes }: Props) {
   const router = useRouter();
-  const [action, setAction] = useState(currentAction);
-  const [entity, setEntity] = useState(currentEntity);
+  const searchParams = useSearchParams();
+  const [action, setAction] = useState(searchParams.get("action") || "");
+  const [entity, setEntity] = useState(searchParams.get("entity") || "");
 
   function handleFilter() {
     const params = new URLSearchParams();
@@ -54,7 +51,7 @@ export default function AuditFilter({ actionTypes, entityTypes, currentAction, c
               ))}
             </select>
           </div>
-          <div className="col-2 col-md-3 d-flex gap-2">
+          <div className="col-2 col-md-2 d-flex gap-2">
             <button onClick={handleFilter}
               className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
               Filter
@@ -67,13 +64,21 @@ export default function AuditFilter({ actionTypes, entityTypes, currentAction, c
             )}
           </div>
         </div>
-        {(currentAction || currentEntity) && (
-          <div className="mt-2 small text-muted">
-            Showing: {currentAction && <span className="badge bg-primary me-1">{currentAction}</span>}
-            {currentEntity && <span className="badge bg-secondary me-1">{currentEntity}</span>}
+        {(action || entity) && (
+          <div className="mt-2">
+            {action && <span className="badge bg-primary me-1">{action}</span>}
+            {entity && <span className="badge bg-secondary me-1">{entity}</span>}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function AuditFilter(props: Props) {
+  return (
+    <Suspense fallback={<div className="card border-0 shadow-sm mb-3 p-3 text-muted small">Loading filters...</div>}>
+      <AuditFilterInner {...props} />
+    </Suspense>
   );
 }
