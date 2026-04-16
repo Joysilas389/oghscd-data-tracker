@@ -76,9 +76,9 @@ export default async function DashboardPage({
     _count: { id: true },
   });
 
-  const localityCounts = await prisma.screening.groupBy({
+  const localityCounts = await prisma.patient.groupBy({
     by: ["locality"],
-    where: { ...baseWhere, locality: { not: null } },
+    where: { archivedAt: null, locality: { not: null } },
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
     take: 8,
