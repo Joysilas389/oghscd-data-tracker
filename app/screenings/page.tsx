@@ -44,7 +44,7 @@ export default async function ScreeningsPage({ searchParams }: { searchParams: P
         facilityName={session.facilityName} active="/screenings" />
       <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4"
         style={{ background: "#f8f9fa", minWidth: 0 }}>
-        <div className="d-flex justify-content-between align-items-center mb-3 mt-5 mt-md-0">
+        <div className="d-flex justify-content-between align-items-center mb-3 mt-5 mt-md-0 pt-2">
           <div>
             <h1 className="h4 fw-bold mb-0">All Screenings</h1>
             <p className="text-muted small mb-0">

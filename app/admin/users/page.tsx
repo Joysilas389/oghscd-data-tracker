@@ -26,7 +26,7 @@ export default async function AdminUsersPage() {
         facilityName={session.facilityName} active="/admin/users" />
       <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4"
         style={{ background: "#f8f9fa", minWidth: 0 }}>
-        <div className="mb-3 mt-5 mt-md-0">
+        <div className="mb-3 mt-5 mt-md-0 pt-2">
           <h1 className="h4 fw-bold mb-0">User Management</h1>
           <p className="text-muted small">{users.length} registered user(s)</p>
         </div>

@@ -120,7 +120,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         style={{
           background: "#1a5276", color: "#fff",
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
-          height: 72,
+          height: 64,
         }}>
         <div>
           <div className="fw-bold" style={{ fontSize: "0.85rem" }}>OGH SCD E-Tracker</div>

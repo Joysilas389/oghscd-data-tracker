@@ -76,7 +76,7 @@ export default async function MapPage() {
         facilityName={session.facilityName} active="/map" />
       <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4"
         style={{ background: "#f8f9fa", minWidth: 0 }}>
-        <div className="mb-4 mt-5 mt-md-0">
+        <div className="mb-4 mt-5 mt-md-0 pt-2">
           <h1 className="h4 fw-bold mb-0">Patient Geographic Distribution</h1>
           <p className="text-muted small">
             Showing {patients.length} patients across {markers.length} localities.
