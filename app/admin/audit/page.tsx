@@ -14,6 +14,9 @@ const ACTION_COLORS: Record<string, string> = {
   CORRECT: "bg-primary",
   RESET_PASSWORD: "bg-danger",
   EXPORT: "bg-dark",
+  REGISTER: "bg-success",
+  FLAGGED: "bg-warning text-dark",
+  CORRECTED: "bg-info",
 };
 
 export default async function AuditLogPage({
@@ -28,12 +31,14 @@ export default async function AuditLogPage({
   const page = parseInt(searchParams.page || "1");
   const pageSize = 50;
   const skip = (page - 1) * pageSize;
+  const selectedAction = searchParams.action || "";
+  const selectedEntity = searchParams.entity || "";
 
   const where: any = {};
-  if (searchParams.action) where.actionType = searchParams.action;
-  if (searchParams.entity) where.entityType = searchParams.entity;
+  if (selectedAction) where.actionType = selectedAction;
+  if (selectedEntity) where.entityType = selectedEntity;
 
-  const [logs, total] = await Promise.all([
+  const [logs, total, actionTypes, entityTypes] = await Promise.all([
     prisma.auditLog.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -44,18 +49,19 @@ export default async function AuditLogPage({
       },
     }),
     prisma.auditLog.count({ where }),
+    prisma.auditLog.findMany({
+      distinct: ["actionType"],
+      select: { actionType: true },
+      orderBy: { actionType: "asc" },
+    }),
+    prisma.auditLog.findMany({
+      distinct: ["entityType"],
+      select: { entityType: true },
+      orderBy: { entityType: "asc" },
+    }),
   ]);
 
   const totalPages = Math.ceil(total / pageSize);
-
-  const actionTypes = await prisma.auditLog.findMany({
-    distinct: ["actionType"],
-    select: { actionType: true },
-  });
-  const entityTypes = await prisma.auditLog.findMany({
-    distinct: ["entityType"],
-    select: { entityType: true },
-  });
 
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
@@ -66,50 +72,69 @@ export default async function AuditLogPage({
         <div className="mb-3 mt-5 mt-md-0 pt-2">
           <h1 className="h4 fw-bold mb-0">Audit Log</h1>
           <p className="text-muted small">
-            {total} total events · Page {page} of {totalPages}
+            {total} total event{total !== 1 ? "s" : ""} · Page {page} of {Math.max(totalPages, 1)}
+            {selectedAction && <span className="ms-2 badge bg-primary">{selectedAction}</span>}
+            {selectedEntity && <span className="ms-2 badge bg-secondary">{selectedEntity}</span>}
           </p>
         </div>
 
         {/* Filters */}
-        <form method="GET" className="card border-0 shadow-sm mb-3">
+        <div className="card border-0 shadow-sm mb-3">
           <div className="card-body p-3">
             <div className="row g-2 align-items-end">
-              <div className="col-6 col-md-3">
+              <div className="col-5 col-md-3">
                 <label className="form-label small fw-semibold mb-1">Action</label>
-                <select name="action" className="form-select form-select-sm"
-                  defaultValue={searchParams.action || ""}>
+                <select name="action" id="actionFilter" className="form-select form-select-sm">
                   <option value="">All Actions</option>
                   {actionTypes.map(a => (
-                    <option key={a.actionType} value={a.actionType}>
+                    <option key={a.actionType} value={a.actionType}
+                      selected={a.actionType === selectedAction}>
                       {a.actionType}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="col-6 col-md-3">
+              <div className="col-5 col-md-3">
                 <label className="form-label small fw-semibold mb-1">Entity</label>
-                <select name="entity" className="form-select form-select-sm"
-                  defaultValue={searchParams.entity || ""}>
+                <select name="entity" id="entityFilter" className="form-select form-select-sm">
                   <option value="">All Entities</option>
                   {entityTypes.map(e => (
-                    <option key={e.entityType} value={e.entityType}>
+                    <option key={e.entityType} value={e.entityType}
+                      selected={e.entityType === selectedEntity}>
                       {e.entityType}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="col-12 col-md-3 d-flex gap-2">
-                <button type="submit"
+              <div className="col-2 col-md-2 d-flex gap-2">
+                <button id="filterBtn"
                   className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
                   Filter
                 </button>
-                <a href="/admin/audit" className="btn btn-sm btn-outline-secondary">
-                  Clear
-                </a>
               </div>
+              {(selectedAction || selectedEntity) && (
+                <div className="col-12 col-md-2">
+                  <a href="/admin/audit" className="btn btn-sm btn-outline-secondary w-100">
+                    Clear Filter
+                  </a>
+                </div>
+              )}
             </div>
           </div>
-        </form>
+        </div>
+
+        {/* Client script to handle filter navigation */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          document.getElementById('filterBtn').addEventListener('click', function() {
+            const action = document.getElementById('actionFilter').value;
+            const entity = document.getElementById('entityFilter').value;
+            const params = new URLSearchParams();
+            if (action) params.set('action', action);
+            if (entity) params.set('entity', entity);
+            params.set('page', '1');
+            window.location.href = '/admin/audit?' + params.toString();
+          });
+        `}} />
 
         {/* Mobile card view */}
         <div className="d-md-none d-flex flex-column gap-2 mb-4">
@@ -137,10 +162,9 @@ export default async function AuditLogPage({
                   {log.actor.role} · {log.actor.email}
                 </div>
                 <div className="mt-1" style={{ fontSize: "0.75rem" }}>
-                  <span className="badge bg-light text-dark border me-1">
-                    {log.entityType}
-                  </span>
-                  <span className="text-muted" style={{ fontFamily: "monospace", fontSize: "0.65rem" }}>
+                  <span className="badge bg-light text-dark border me-1">{log.entityType}</span>
+                  <span className="text-muted"
+                    style={{ fontFamily: "monospace", fontSize: "0.65rem" }}>
                     {log.entityId.slice(0, 12)}...
                   </span>
                 </div>
@@ -192,8 +216,8 @@ export default async function AuditLogPage({
                       <td>
                         <span className={`badge ${
                           log.actor.role === "ADMIN" ? "bg-danger" :
-                          log.actor.role === "MANAGER" ? "bg-warning text-dark" :
-                          "bg-primary"}`} style={{ fontSize: "0.65rem" }}>
+                          log.actor.role === "MANAGER" ? "bg-warning text-dark" : "bg-primary"}`}
+                          style={{ fontSize: "0.65rem" }}>
                           {log.actor.role}
                         </span>
                       </td>
@@ -227,24 +251,20 @@ export default async function AuditLogPage({
         {totalPages > 1 && (
           <div className="d-flex gap-2 justify-content-center flex-wrap">
             {page > 1 && (
-              <a href={`/admin/audit?page=${page - 1}&action=${searchParams.action || ""}&entity=${searchParams.entity || ""}`}
-                className="btn btn-sm btn-outline-secondary">
-                ← Previous
-              </a>
+              <a href={`/admin/audit?page=${page - 1}&action=${selectedAction}&entity=${selectedEntity}`}
+                className="btn btn-sm btn-outline-secondary">← Previous</a>
             )}
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
               <a key={p}
-                href={`/admin/audit?page=${p}&action=${searchParams.action || ""}&entity=${searchParams.entity || ""}`}
+                href={`/admin/audit?page=${p}&action=${selectedAction}&entity=${selectedEntity}`}
                 className={`btn btn-sm ${p === page ? "text-white" : "btn-outline-secondary"}`}
                 style={p === page ? { background: "#1a5276" } : {}}>
                 {p}
               </a>
             ))}
             {page < totalPages && (
-              <a href={`/admin/audit?page=${page + 1}&action=${searchParams.action || ""}&entity=${searchParams.entity || ""}`}
-                className="btn btn-sm btn-outline-secondary">
-                Next →
-              </a>
+              <a href={`/admin/audit?page=${page + 1}&action=${selectedAction}&entity=${selectedEntity}`}
+                className="btn btn-sm btn-outline-secondary">Next →</a>
             )}
           </div>
         )}
