@@ -3,11 +3,19 @@ import { getIronSession } from "iron-session";
 import type { SessionData } from "./lib/session";
 import { sessionOptions } from "./lib/session";
 
-const PUBLIC = ["/login", "/register", "/api/auth/login", "/api/auth/register"];
+const PUBLIC = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/offline.html",
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/logout",
+];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (PUBLIC.some((p) => pathname.startsWith(p))) return NextResponse.next();
+  if (PUBLIC.some(p => pathname.startsWith(p))) return NextResponse.next();
   if (pathname.startsWith("/_next") || pathname.includes(".")) return NextResponse.next();
   const res = NextResponse.next();
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
@@ -18,5 +26,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|icons).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|offline.html|icons).*)"],
 };
