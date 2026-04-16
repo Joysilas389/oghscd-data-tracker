@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface Props {
+  currentAction: string;
+  currentEntity: string;
   actionTypes: string[];
   entityTypes: string[];
   currentAction: string;

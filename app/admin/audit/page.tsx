@@ -80,6 +80,8 @@ export default async function AuditLogPage({
         <AuditFilter
           actionTypes={actionTypes.map(a => a.actionType)}
           entityTypes={entityTypes.map(e => e.entityType)}
+          currentAction={selectedAction}
+          currentEntity={selectedEntity}
           
           
         />
