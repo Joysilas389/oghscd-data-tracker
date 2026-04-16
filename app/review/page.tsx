@@ -31,7 +31,7 @@ export default async function ReviewPage() {
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
       <Sidebar role={session.role} fullName={session.fullName} facilityName={session.facilityName} active="/review" />
       <div className="flex-grow-1 p-3 p-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
-        <div className="mb-4 mt-5 mt-md-0 pt-2">
+        <div className="mb-4 mt-5 mt-md-0 pt-3">
           <h1 className="h4 fw-bold mb-0">Review Queue</h1>
           <p className="text-muted small">Pending and flagged screenings requiring review</p>
         </div>

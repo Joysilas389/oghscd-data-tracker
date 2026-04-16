@@ -129,7 +129,7 @@ export default async function DashboardPage({
         style={{ background: "#f8f9fa", minWidth: 0 }}>
 
         {/* Header */}
-        <div className="mb-3 mt-5 mt-md-0 pt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div className="mb-3 mt-5 mt-md-0 pt-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
           <div>
             <h1 className="h4 fw-bold mb-0">Dashboard</h1>
             <p className="text-muted small mb-0">
