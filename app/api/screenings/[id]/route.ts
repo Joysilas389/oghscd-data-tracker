@@ -63,7 +63,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       confirmatoryAction: parsed.data.confirmatoryAction,
       remarks: parsed.data.remarks,
       treatmentStarted: parsed.data.treatmentStarted,
-      treatmentStartDate: parsed.data.treatmentStartDate ? new Date(parsed.data.treatmentStartDate) : null,
+      treatmentStartDate: parsed.data.treatmentStartDate
+        ? new Date(parsed.data.treatmentStartDate) : null,
       treatmentNotes: parsed.data.treatmentNotes,
       medicationPlan: parsed.data.medicationPlan,
       referralNotes: parsed.data.referralNotes,
@@ -97,14 +98,31 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Soft delete the screening
   await prisma.screening.update({
     where: { id },
     data: { archivedAt: new Date() },
   });
 
+  // Check if patient has any remaining active screenings
+  const remainingScreenings = await prisma.screening.count({
+    where: {
+      patientId: existing.patientId,
+      archivedAt: null,
+    },
+  });
+
+  // If no remaining screenings, soft delete the patient too
+  if (remainingScreenings === 0) {
+    await prisma.patient.update({
+      where: { id: existing.patientId },
+      data: { archivedAt: new Date() },
+    });
+  }
+
   await createAuditLog({
     actorId: session.userId,
-    actionType: "ARCHIVE_SCREENING",
+    actionType: "DELETE",
     entityType: "Screening",
     entityId: id,
     ipAddress: req.headers.get("x-forwarded-for") ?? undefined,
