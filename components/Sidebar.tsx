@@ -27,6 +27,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
   const isManager = role === "MANAGER" || role === "ADMIN";
   const allLinks = isManager ? [...links, ...managerLinks] : links;
 
+  // Mobile bottom nav — 5 most important links per role
   const mobileBottomLinks = isManager
     ? [
         { href: "/dashboard", label: "Home", icon: "📊" },
@@ -45,6 +46,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
 
   return (
     <>
+      {/* Desktop sidebar */}
       <div className="d-none d-md-flex flex-column p-3"
         style={{ width: 230, minWidth: 230, background: "#1a5276",
           minHeight: "100vh", position: "sticky", top: 0,
@@ -77,6 +79,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         </div>
       </div>
 
+      {/* Mobile top bar */}
       <div className="d-md-none w-100 d-flex align-items-center justify-content-between px-3"
         style={{ background: "#1a5276", position: "sticky", top: 0,
           zIndex: 1000, height: 48, minHeight: 48 }}>
@@ -90,14 +93,17 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         </div>
       </div>
 
+      {/* Mobile bottom nav */}
       <div className="d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow"
         style={{ zIndex: 999 }}>
         <div className="d-flex justify-content-around py-1">
           {mobileBottomLinks.map(item => (
             <Link key={item.href} href={item.href}
               className="text-center text-decoration-none py-1"
-              style={{ fontSize: "0.6rem", flex: 1,
-                color: active === item.href ? "#1a5276" : "#6c757d" }}>
+              style={{
+                fontSize: "0.6rem", flex: 1,
+                color: active === item.href ? "#1a5276" : "#6c757d"
+              }}>
               {(item as { highlight?: boolean }).highlight ? (
                 <>
                   <div className="rounded-circle d-inline-flex align-items-center justify-content-center text-white"
