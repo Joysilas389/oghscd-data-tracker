@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Sidebar from "@/components/Sidebar";
+import AuditFilter from "@/components/AuditFilter";
 
 const ACTION_COLORS: Record<string, string> = {
   CREATE: "bg-success",
@@ -11,12 +12,12 @@ const ACTION_COLORS: Record<string, string> = {
   LOGOUT: "bg-secondary",
   APPROVE: "bg-success",
   FLAG: "bg-warning text-dark",
+  FLAGGED: "bg-warning text-dark",
   CORRECT: "bg-primary",
+  CORRECTED: "bg-info",
   RESET_PASSWORD: "bg-danger",
   EXPORT: "bg-dark",
   REGISTER: "bg-success",
-  FLAGGED: "bg-warning text-dark",
-  CORRECTED: "bg-info",
 };
 
 export default async function AuditLogPage({
@@ -73,68 +74,13 @@ export default async function AuditLogPage({
           <h1 className="h4 fw-bold mb-0">Audit Log</h1>
           <p className="text-muted small">
             {total} total event{total !== 1 ? "s" : ""} · Page {page} of {Math.max(totalPages, 1)}
-            {selectedAction && <span className="ms-2 badge bg-primary">{selectedAction}</span>}
-            {selectedEntity && <span className="ms-2 badge bg-secondary">{selectedEntity}</span>}
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="card border-0 shadow-sm mb-3">
-          <div className="card-body p-3">
-            <div className="row g-2 align-items-end">
-              <div className="col-5 col-md-3">
-                <label className="form-label small fw-semibold mb-1">Action</label>
-                <select name="action" id="actionFilter" className="form-select form-select-sm">
-                  <option value="">All Actions</option>
-                  {actionTypes.map(a => (
-                    <option key={a.actionType} value={a.actionType}
-                      selected={a.actionType === selectedAction}>
-                      {a.actionType}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-5 col-md-3">
-                <label className="form-label small fw-semibold mb-1">Entity</label>
-                <select name="entity" id="entityFilter" className="form-select form-select-sm">
-                  <option value="">All Entities</option>
-                  {entityTypes.map(e => (
-                    <option key={e.entityType} value={e.entityType}
-                      selected={e.entityType === selectedEntity}>
-                      {e.entityType}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-2 col-md-2 d-flex gap-2">
-                <button id="filterBtn"
-                  className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
-                  Filter
-                </button>
-              </div>
-              {(selectedAction || selectedEntity) && (
-                <div className="col-12 col-md-2">
-                  <a href="/admin/audit" className="btn btn-sm btn-outline-secondary w-100">
-                    Clear Filter
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Client script to handle filter navigation */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          document.getElementById('filterBtn').addEventListener('click', function() {
-            const action = document.getElementById('actionFilter').value;
-            const entity = document.getElementById('entityFilter').value;
-            const params = new URLSearchParams();
-            if (action) params.set('action', action);
-            if (entity) params.set('entity', entity);
-            params.set('page', '1');
-            window.location.href = '/admin/audit?' + params.toString();
-          });
-        `}} />
+        <AuditFilter
+          actionTypes={actionTypes.map(a => a.actionType)}
+          entityTypes={entityTypes.map(e => e.entityType)}
+        />
 
         {/* Mobile card view */}
         <div className="d-md-none d-flex flex-column gap-2 mb-4">
