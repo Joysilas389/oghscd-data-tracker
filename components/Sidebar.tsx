@@ -27,21 +27,20 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
   const isManager = role === "MANAGER" || role === "ADMIN";
   const allLinks = isManager ? [...links, ...managerLinks] : links;
 
-  // Mobile bottom nav — 5 most important links per role
   const mobileBottomLinks = isManager
     ? [
         { href: "/dashboard", label: "Home", icon: "📊" },
-        { href: "/patients", label: "Patients", icon: "👥" },
         { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
         { href: "/review", label: "Review", icon: "🔍" },
         { href: "/admin/users", label: "Users", icon: "⚙️" },
+        { href: "/profile", label: "Profile", icon: "👤" },
       ]
     : [
         { href: "/dashboard", label: "Home", icon: "📊" },
-        { href: "/patients", label: "Patients", icon: "👥" },
-        { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
         { href: "/screenings", label: "Records", icon: "📋" },
+        { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
         { href: "/map", label: "Map", icon: "🗺️" },
+        { href: "/profile", label: "Profile", icon: "👤" },
       ];
 
   return (
@@ -93,7 +92,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         </div>
       </div>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav - Profile always visible */}
       <div className="d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow"
         style={{ zIndex: 999 }}>
         <div className="d-flex justify-content-around py-1">
