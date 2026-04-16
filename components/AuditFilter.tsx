@@ -30,9 +30,9 @@ export default function AuditFilter({ actionTypes, entityTypes }: Props) {
   return (
     <div className="card border-0 shadow-sm mb-3">
       <div className="card-body p-3">
-        <div className="row g-2 align-items-end">
-          <div className="col-5 col-md-3">
-            <label className="form-label small fw-semibold mb-1">Action</label>
+        <div className="row g-2">
+          <div className="col-12 col-sm-4">
+            <label className="form-label small fw-semibold mb-1">Action Type</label>
             <select className="form-select form-select-sm"
               value={action} onChange={e => setAction(e.target.value)}>
               <option value="">All Actions</option>
@@ -41,8 +41,8 @@ export default function AuditFilter({ actionTypes, entityTypes }: Props) {
               ))}
             </select>
           </div>
-          <div className="col-5 col-md-3">
-            <label className="form-label small fw-semibold mb-1">Entity</label>
+          <div className="col-12 col-sm-4">
+            <label className="form-label small fw-semibold mb-1">Entity Type</label>
             <select className="form-select form-select-sm"
               value={entity} onChange={e => setEntity(e.target.value)}>
               <option value="">All Entities</option>
@@ -51,25 +51,18 @@ export default function AuditFilter({ actionTypes, entityTypes }: Props) {
               ))}
             </select>
           </div>
-          <div className="col-2 col-md-2 d-flex gap-2">
+          <div className="col-12 col-sm-4 d-flex align-items-end gap-2">
             <button onClick={handleFilter}
-              className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
-              Filter
+              className="btn btn-sm text-white flex-grow-1"
+              style={{ background: "#1a5276" }}>
+              🔍 Filter
             </button>
-            {(action || entity) && (
-              <button onClick={handleClear}
-                className="btn btn-sm btn-outline-secondary">
-                Clear
-              </button>
-            )}
+            <button onClick={handleClear}
+              className="btn btn-sm btn-outline-secondary flex-grow-1">
+              ✕ Clear
+            </button>
           </div>
         </div>
-        {(action || entity) && (
-          <div className="mt-2">
-            {action && <span className="badge bg-primary me-1">{action}</span>}
-            {entity && <span className="badge bg-secondary me-1">{entity}</span>}
-          </div>
-        )}
       </div>
     </div>
   );
