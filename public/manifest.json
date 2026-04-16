@@ -1,6 +1,6 @@
 {
   "name": "OGH SCD E-Tracker",
-  "short_name": "SCD Tracker",
+  "short_name": "OGH E-Tracker",
   "description": "Oda Government Hospital Sickle Cell Disease Screening Tracker",
   "start_url": "/dashboard",
   "display": "standalone",
