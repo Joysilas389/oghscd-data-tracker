@@ -124,7 +124,7 @@ export default async function DashboardPage({
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
       <Sidebar role={session.role} fullName={session.fullName}
         facilityName={session.facilityName} active="/dashboard" />
-      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4"
+      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4 mb-5 mb-md-0"
         style={{ background: "#f8f9fa", minWidth: 0 }}>
 
         {/* Header */}
@@ -230,7 +230,7 @@ export default async function DashboardPage({
         />
 
         {/* Recent screenings */}
-        <div className="card border-0 shadow-sm mt-4">
+        <div className="card border-0 shadow-sm mt-4 mb-5 mb-md-2">
           <div className="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
             <span>🕐 Recent Screenings</span>
             <Link href="/screenings" className="btn btn-sm btn-outline-secondary">
