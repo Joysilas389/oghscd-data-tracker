@@ -18,6 +18,7 @@ const baseLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/help", label: "Help", icon: "❓" },
   { href: "/guide", label: "Guide", icon: "📖" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -32,6 +33,7 @@ const managerLinks = [
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/help", label: "Help", icon: "❓" },
   { href: "/guide", label: "Guide", icon: "📖" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -47,6 +49,7 @@ const adminLinks = [
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
   { href: "/help", label: "Help", icon: "❓" },
   { href: "/guide", label: "Guide", icon: "📖" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -57,6 +60,7 @@ const mobileScreenerLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/help", label: "Help", icon: "❓" },
   { href: "/guide", label: "Guide", icon: "📖" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -67,6 +71,7 @@ const mobileManagerLinks = [
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/help", label: "Help", icon: "❓" },
   { href: "/guide", label: "Guide", icon: "📖" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -77,6 +82,7 @@ const mobileAdminLinks = [
   { href: "/admin/audit", label: "Audit", icon: "📜" },
   { href: "/help", label: "Help", icon: "❓" },
   { href: "/guide", label: "Guide", icon: "📖" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
