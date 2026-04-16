@@ -17,6 +17,7 @@ const baseLinks = [
   { href: "/reports", label: "Reports", icon: "📁" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/help", label: "Help", icon: "📖" },
 ];
 
@@ -30,6 +31,7 @@ const managerLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/help", label: "Help", icon: "📖" },
 ];
 
@@ -44,6 +46,7 @@ const adminLinks = [
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/help", label: "Help", icon: "📖" },
 ];
 
@@ -54,6 +57,7 @@ const mobileScreenerLinks = [
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/help", label: "Help", icon: "📖" },
 ];
 
@@ -63,6 +67,7 @@ const mobileManagerLinks = [
   { href: "/review", label: "Review", icon: "🔍" },
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/help", label: "Help", icon: "📖" },
 ];
 
@@ -72,6 +77,7 @@ const mobileAdminLinks = [
   { href: "/admin/users", label: "Users", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit", icon: "📜" },
   { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/help", label: "Help", icon: "❓" },
   { href: "/help", label: "Help", icon: "📖" },
 ];
 
