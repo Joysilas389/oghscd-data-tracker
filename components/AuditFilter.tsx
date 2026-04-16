@@ -5,6 +5,8 @@ interface Props {
   entityTypes: string[];
   selectedAction: string;
   selectedEntity: string;
+  selectedAction: string;
+  selectedEntity: string;
 }
 
 export default function AuditFilter({ actionTypes, entityTypes, selectedAction, selectedEntity }: Props) {
