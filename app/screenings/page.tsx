@@ -4,13 +4,25 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import ScreeningRowActions from "@/components/ScreeningRowActions";
+import ScreeningsSearch from "@/components/ScreeningsSearch";
 
-export default async function ScreeningsPage() {
+export default async function ScreeningsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const session = await getSession();
   if (!session.userId) redirect("/login");
+  const { q } = await searchParams;
 
   const screenings = await prisma.screening.findMany({
-    where: { archivedAt: null },
+    where: {
+      archivedAt: null,
+      ...(q ? {
+        OR: [
+          { patient: { firstName: { contains: q, mode: "insensitive" } } },
+          { patient: { lastName: { contains: q, mode: "insensitive" } } },
+          { patient: { patientCode: { contains: q, mode: "insensitive" } } },
+          { screeningResult: { contains: q, mode: "insensitive" } },
+        ],
+      } : {}),
+    },
     orderBy: { screeningDatetime: "desc" },
     take: 100,
     include: {
@@ -28,17 +40,21 @@ export default async function ScreeningsPage() {
 
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
-      <Sidebar role={session.role} fullName={session.fullName} facilityName={session.facilityName} active="/screenings" />
-      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
-        <div className="d-flex justify-content-between align-items-center mb-4 mt-5 mt-md-0">
+      <Sidebar role={session.role} fullName={session.fullName}
+        facilityName={session.facilityName} active="/screenings" />
+      <div className="flex-grow-1 p-3 p-md-4 pb-5 pb-md-4"
+        style={{ background: "#f8f9fa", minWidth: 0 }}>
+        <div className="d-flex justify-content-between align-items-center mb-3 mt-5 mt-md-0">
           <div>
             <h1 className="h4 fw-bold mb-0">All Screenings</h1>
-            <p className="text-muted small mb-0">{screenings.length} record(s)</p>
+            <p className="text-muted small mb-0">
+              {screenings.length} record(s){q ? ` matching "${q}"` : ""}
+            </p>
           </div>
-          <Link href="/screenings/new" className="btn btn-sm text-white" style={{ background: "#1a5276" }}>
-            + New Screening
-          </Link>
+          <Link href="/screenings/new" className="btn btn-sm text-white"
+            style={{ background: "#1a5276" }}>+ New</Link>
         </div>
+        <ScreeningsSearch defaultValue={q ?? ""} />
         <div className="card border-0 shadow-sm">
           <div className="card-body p-0">
             <div className="table-responsive">
@@ -58,12 +74,15 @@ export default async function ScreeningsPage() {
                   {screenings.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="text-center text-muted py-4">
-                        No screenings yet. <Link href="/screenings/new">Add first →</Link>
+                        {q ? `No results for "${q}"` : "No screenings yet."}{" "}
+                        {!q && <Link href="/screenings/new">Add first →</Link>}
                       </td>
                     </tr>
                   ) : screenings.map(s => (
                     <tr key={s.id}>
-                      <td className="font-monospace" style={{ fontSize: "0.75rem" }}>{s.patient.patientCode}</td>
+                      <td className="font-monospace" style={{ fontSize: "0.75rem" }}>
+                        {s.patient.patientCode}
+                      </td>
                       <td>
                         <Link href={`/patients/${s.patient.id}`} className="text-decoration-none">
                           {s.patient.firstName} {s.patient.lastName}
@@ -74,7 +93,9 @@ export default async function ScreeningsPage() {
                           {s.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
                         </span>
                       </td>
-                      <td>{s.screeningResult}</td>
+                      <td style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.screeningResult}
+                      </td>
                       <td>{new Date(s.screeningDatetime).toLocaleDateString("en-GB")}</td>
                       <td>
                         <span className={`badge ${statusClass[s.reviewStatus] ?? "bg-secondary"}`}>
@@ -84,8 +105,10 @@ export default async function ScreeningsPage() {
                       <td>
                         <ScreeningRowActions
                           screeningId={s.id}
-                          canEdit={session.role !== "SCREENER" || s.enteredBy.id === session.userId}
-                          canDelete={session.role !== "SCREENER" || s.enteredBy.id === session.userId}
+                          reviewStatus={s.reviewStatus}
+                          enteredById={s.enteredBy.id}
+                          currentUserId={session.userId}
+                          currentUserRole={session.role}
                         />
                       </td>
                     </tr>

@@ -44,6 +44,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "You can only edit your own records" }, { status: 403 });
   }
 
+  if (session.role === "SCREENER" && existing.reviewStatus === "APPROVED") {
+    return NextResponse.json({ error: "Approved records cannot be edited" }, { status: 403 });
+  }
+
   const body = await req.json();
   const parsed = UpdateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });

@@ -12,7 +12,6 @@ export default function EditScreeningPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -64,8 +63,7 @@ export default function EditScreeningPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
-    setError("");
+    setSaving(true); setError("");
     try {
       const res = await fetch(`/api/screenings/${id}`, {
         method: "PATCH",
@@ -88,7 +86,7 @@ export default function EditScreeningPage() {
   return (
     <div className="container py-4" style={{ maxWidth: 700 }}>
       <div className="mb-4">
-        <Link href={`/screenings/${id}`} className="text-muted small text-decoration-none">← Back to Detail</Link>
+        <Link href={`/screenings/${id}`} className="text-muted small text-decoration-none">← Back</Link>
         <h1 className="h4 fw-bold mb-0 mt-1">Edit Screening</h1>
       </div>
       {error && <div className="alert alert-danger small">{error}</div>}
@@ -98,8 +96,8 @@ export default function EditScreeningPage() {
             <div className="row g-3">
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Date & Time *</label>
-                <input type="datetime-local" className="form-control" value={form.screeningDatetime}
-                  onChange={set("screeningDatetime")} required />
+                <input type="datetime-local" className="form-control"
+                  value={form.screeningDatetime} onChange={set("screeningDatetime")} required />
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Screening Type *</label>
@@ -110,14 +108,16 @@ export default function EditScreeningPage() {
               </div>
               <div className="col-12">
                 <label className="form-label small fw-semibold">Screening Result *</label>
-                <select className="form-select" value={form.screeningResult} onChange={set("screeningResult")} required>
+                <select className="form-select" value={form.screeningResult}
+                  onChange={set("screeningResult")} required>
                   <option value="">Select result...</option>
                   {RESULTS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Confirmatory Action</label>
-                <select className="form-select" value={form.confirmatoryAction} onChange={set("confirmatoryAction")}>
+                <select className="form-select" value={form.confirmatoryAction}
+                  onChange={set("confirmatoryAction")}>
                   <option value="NONE">None</option>
                   <option value="DONE">Confirmatory Done</option>
                   <option value="REFERRED">Referred for Confirmatory</option>
@@ -125,22 +125,27 @@ export default function EditScreeningPage() {
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Confirmed Result</label>
-                <input className="form-control" value={form.confirmedResult} onChange={set("confirmedResult")} />
+                <input className="form-control" value={form.confirmedResult}
+                  onChange={set("confirmedResult")} />
               </div>
               <div className="col-12">
                 <label className="form-label small fw-semibold">Remarks</label>
-                <textarea className="form-control" rows={2} value={form.remarks} onChange={set("remarks")} />
+                <textarea className="form-control" rows={2} value={form.remarks}
+                  onChange={set("remarks")} />
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Facility</label>
-                <input className="form-control" value={form.facilityName} onChange={set("facilityName")} />
+                <input className="form-control" value={form.facilityName}
+                  onChange={set("facilityName")} />
               </div>
               <div className="col-12">
                 <div className="form-check form-switch">
                   <input className="form-check-input" type="checkbox" id="treatment"
                     checked={form.treatmentStarted}
                     onChange={e => setForm(p => ({ ...p, treatmentStarted: e.target.checked }))} />
-                  <label className="form-check-label fw-semibold" htmlFor="treatment">Treatment Started</label>
+                  <label className="form-check-label fw-semibold" htmlFor="treatment">
+                    Treatment Started
+                  </label>
                 </div>
               </div>
               {form.treatmentStarted && (
@@ -152,7 +157,8 @@ export default function EditScreeningPage() {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold">Medication / Plan</label>
-                    <input className="form-control" value={form.medicationPlan} onChange={set("medicationPlan")} />
+                    <input className="form-control" value={form.medicationPlan}
+                      onChange={set("medicationPlan")} />
                   </div>
                   <div className="col-12">
                     <label className="form-label small fw-semibold">Treatment Notes</label>
@@ -168,8 +174,11 @@ export default function EditScreeningPage() {
               )}
             </div>
             <div className="d-flex gap-2 mt-4">
-              <button type="submit" className="btn text-white" style={{ background: "#1a5276" }} disabled={saving}>
-                {saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving...</> : "💾 Update Screening"}
+              <button type="submit" className="btn text-white"
+                style={{ background: "#1a5276" }} disabled={saving}>
+                {saving
+                  ? <><span className="spinner-border spinner-border-sm me-2" />Saving...</>
+                  : "💾 Update Screening"}
               </button>
               <Link href={`/screenings/${id}`} className="btn btn-outline-secondary">Cancel</Link>
             </div>
