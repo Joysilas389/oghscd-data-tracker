@@ -2,13 +2,20 @@ import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import LogoutButton from "@/components/LogoutButton";
 
-export default async function ScreeningDetailPage({ params }: { params: { id: string } }) {
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ScreeningDetailPage({ params }: Props) {
   const session = await getSession();
   if (!session.userId) redirect("/login");
 
+  const { id } = await params;
+
   const screening = await prisma.screening.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       patient: true,
       enteredBy: { select: { fullName: true, cadre: true } },
@@ -25,26 +32,32 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
     CORRECTED: "bg-info text-dark",
   };
 
+  const navLinks = [
+    { href: "/dashboard", label: "Dashboard", icon: "📊" },
+    { href: "/patients", label: "Patients", icon: "👥" },
+    { href: "/screenings/new", label: "New Screening", icon: "➕" },
+    { href: "/screenings", label: "All Screenings", icon: "📋" },
+    { href: "/reports", label: "Reports", icon: "📤" },
+    { href: "/profile", label: "My Profile", icon: "👤" },
+  ];
+
   return (
     <div className="d-flex" style={{ minHeight: "100vh" }}>
       <div className="d-none d-md-flex flex-column p-3" style={{ width: 220, minWidth: 220, background: "#1a5276", minHeight: "100vh" }}>
         <div className="text-white fw-bold small mb-4">OGH SCD E-Tracker</div>
-        <nav className="nav flex-column">
-          {[
-            { href: "/dashboard", label: "Dashboard", icon: "📊" },
-            { href: "/patients", label: "Patients", icon: "👥" },
-            { href: "/screenings/new", label: "New Screening", icon: "➕" },
-            { href: "/screenings", label: "All Screenings", icon: "📋" },
-            { href: "/reports", label: "Reports", icon: "📤" },
-            { href: "/profile", label: "My Profile", icon: "👤" },
-          ].map(item => (
+        <nav className="nav flex-column flex-grow-1">
+          {navLinks.map(item => (
             <Link key={item.href} href={item.href}
               className="nav-link d-flex align-items-center gap-2 small rounded mb-1"
-              style={{ color: "rgba(255,255,255,0.8)", padding: "0.5rem 0.75rem" }}>
+              style={{ color: "rgba(255,255,255,0.85)", padding: "0.5rem 0.75rem" }}>
               <span>{item.icon}</span><span>{item.label}</span>
             </Link>
           ))}
         </nav>
+        <div className="mt-auto pt-3 border-top border-secondary">
+          <div className="text-white-50 small mb-2">{session.fullName}</div>
+          <LogoutButton />
+        </div>
       </div>
 
       <div className="flex-grow-1 p-3 p-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
@@ -52,13 +65,13 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
           <div>
             <Link href="/screenings" className="text-muted small text-decoration-none">← All Screenings</Link>
             <h1 className="h4 fw-bold mb-0 mt-1">Screening Detail</h1>
+            <p className="text-muted small mb-0 font-monospace">{screening.patient.patientCode}</p>
           </div>
           <span className={`badge fs-6 ${statusClass[screening.reviewStatus] ?? "bg-secondary"}`}>
             {screening.reviewStatus}
           </span>
         </div>
 
-        {/* Patient Info */}
         <div className="card border-0 shadow-sm mb-3">
           <div className="card-header bg-white fw-semibold">Patient Information</div>
           <div className="card-body">
@@ -84,7 +97,7 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
                 <div className="fw-semibold">{screening.patient.phoneNumber || "—"}</div>
               </div>
               <div className="col-6 col-md-3">
-                <div className="text-muted">NHIS Status</div>
+                <div className="text-muted">NHIS</div>
                 <div className="fw-semibold">{screening.patient.nhisStatus}</div>
               </div>
               <div className="col-6 col-md-3">
@@ -99,7 +112,6 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
           </div>
         </div>
 
-        {/* Screening Info */}
         <div className="card border-0 shadow-sm mb-3">
           <div className="card-header bg-white fw-semibold">Screening Data</div>
           <div className="card-body">
@@ -110,11 +122,9 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
               </div>
               <div className="col-6 col-md-3">
                 <div className="text-muted">Type</div>
-                <div className="fw-semibold">
-                  <span className={`badge ${screening.screeningType === "NEWBORN" ? "bg-info text-dark" : "bg-primary"}`}>
-                    {screening.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
-                  </span>
-                </div>
+                <span className={`badge ${screening.screeningType === "NEWBORN" ? "bg-info text-dark" : "bg-primary"}`}>
+                  {screening.screeningType === "CATCH_UP" ? "Catch-Up" : "Newborn"}
+                </span>
               </div>
               <div className="col-6 col-md-3">
                 <div className="text-muted">Result</div>
@@ -124,34 +134,31 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
                 <div className="text-muted">Confirmatory Action</div>
                 <div className="fw-semibold">{screening.confirmatoryAction}</div>
               </div>
-              {screening.confirmedResult && (
-                <div className="col-6 col-md-3">
-                  <div className="text-muted">Confirmed Result</div>
-                  <div className="fw-semibold">{screening.confirmedResult}</div>
-                </div>
-              )}
-              {screening.remarks && (
-                <div className="col-12">
-                  <div className="text-muted">Remarks</div>
-                  <div className="fw-semibold">{screening.remarks}</div>
-                </div>
-              )}
+              <div className="col-6 col-md-3">
+                <div className="text-muted">Treatment Started</div>
+                <div className="fw-semibold">{screening.treatmentStarted ? "✅ Yes" : "❌ No"}</div>
+              </div>
               <div className="col-6 col-md-3">
                 <div className="text-muted">Facility</div>
                 <div className="fw-semibold">{screening.facilityName || "—"}</div>
               </div>
               <div className="col-6 col-md-3">
                 <div className="text-muted">Entered By</div>
-                <div className="fw-semibold">{screening.enteredBy.fullName} ({screening.enteredBy.cadre})</div>
+                <div className="fw-semibold">{screening.enteredBy.fullName}</div>
               </div>
+              {screening.remarks && (
+                <div className="col-12">
+                  <div className="text-muted">Remarks</div>
+                  <div className="fw-semibold">{screening.remarks}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Treatment */}
         {screening.treatmentStarted && (
-          <div className="card border-0 shadow-sm mb-3 border-start border-success border-3">
-            <div className="card-header bg-white fw-semibold text-success">Treatment Details</div>
+          <div className="card border-0 shadow-sm mb-3">
+            <div className="card-header bg-white fw-semibold text-success">💊 Treatment Details</div>
             <div className="card-body">
               <div className="row g-3 small">
                 {screening.treatmentStartDate && (
@@ -183,20 +190,9 @@ export default async function ScreeningDetailPage({ params }: { params: { id: st
           </div>
         )}
 
-        {/* Review */}
-        {screening.reviewedBy && (
-          <div className="card border-0 shadow-sm mb-3">
-            <div className="card-header bg-white fw-semibold">Review</div>
-            <div className="card-body small">
-              <div><span className="text-muted">Reviewed by:</span> {screening.reviewedBy.fullName}</div>
-              <div><span className="text-muted">Reviewed at:</span> {screening.reviewedAt ? new Date(screening.reviewedAt).toLocaleString("en-GB") : "—"}</div>
-              {screening.reviewNote && <div><span className="text-muted">Note:</span> {screening.reviewNote}</div>}
-            </div>
-          </div>
-        )}
-
-        <div className="d-flex gap-2">
-          <Link href="/screenings" className="btn btn-outline-secondary btn-sm">← Back</Link>
+        <div className="d-flex gap-2 flex-wrap">
+          <Link href="/screenings" className="btn btn-outline-secondary btn-sm">← Back to Screenings</Link>
+          <Link href="/dashboard" className="btn btn-outline-secondary btn-sm">🏠 Dashboard</Link>
           <Link href="/screenings/new" className="btn btn-sm text-white" style={{ background: "#1a5276" }}>+ New Screening</Link>
         </div>
       </div>
