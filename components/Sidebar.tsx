@@ -21,6 +21,7 @@ const links = [
 const managerLinks = [
   { href: "/review", label: "Review Queue", icon: "🔍" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
+  { href: "/admin/audit", label: "Audit Log", icon: "📋" },
 ];
 
 export default function Sidebar({ role, fullName, facilityName, active }: Props) {
