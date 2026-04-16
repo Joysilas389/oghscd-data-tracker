@@ -37,7 +37,7 @@ export default async function DashboardPage({
 
   const baseWhere = { archivedAt: null, ...dateWhere };
 
-  const [total, thisWeek, thisMonth, pending, catchUp, newborn, treatment, patients] =
+  const [total, thisWeek, thisMonth, pending, catchUp, newborn, treatment, patients, myFlagged] =
     await Promise.all([
       prisma.screening.count({ where: { archivedAt: null, ...dateWhere } }),
       prisma.screening.count({ where: { archivedAt: null, screeningDatetime: { gte: weekAgo } } }),
@@ -47,6 +47,7 @@ export default async function DashboardPage({
       prisma.screening.count({ where: { archivedAt: null, screeningType: "NEWBORN", ...dateWhere } }),
       prisma.screening.count({ where: { archivedAt: null, treatmentStarted: true, ...dateWhere } }),
       prisma.patient.count({ where: { archivedAt: null } }),
+    prisma.screening.count({ where: { archivedAt: null, reviewStatus: "FLAGGED", enteredById: session.userId } }),
     ]);
 
   const recent = await prisma.screening.findMany({
@@ -153,6 +154,16 @@ export default async function DashboardPage({
           ))}
         </div>
 
+        { myFlagged > 0 && session.role === "SCREENER" && (
+          <div className="alert alert-danger d-flex align-items-center gap-2 mb-3">
+            <span style={{ fontSize: "1.2rem" }}>🚩</span>
+            <div>
+              <strong>You have {myFlagged} flagged record{myFlagged > 1 ? "s" : ""}</strong> that need attention.
+              Please contact your Manager or HIM to review and correct.
+              <a href="/screenings?status=FLAGGED" className="alert-link ms-2">View flagged records →</a>
+            </div>
+          </div>
+        )}
         {/* KPI Cards */}
         <div className="row g-3 mb-4">
           {[
