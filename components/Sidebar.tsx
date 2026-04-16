@@ -23,9 +23,24 @@ const managerLinks = [
 ];
 
 export default function Sidebar({ role, fullName, facilityName, active }: Props) {
-  const allLinks = (role === "MANAGER" || role === "ADMIN")
-    ? [...links, ...managerLinks]
-    : links;
+  const isManager = role === "MANAGER" || role === "ADMIN";
+  const allLinks = isManager ? [...links, ...managerLinks] : links;
+
+  const mobileBottomLinks = isManager
+    ? [
+        { href: "/dashboard", label: "Home", icon: "📊" },
+        { href: "/patients", label: "Patients", icon: "👥" },
+        { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
+        { href: "/review", label: "Review", icon: "🔍" },
+        { href: "/admin/users", label: "Users", icon: "⚙️" },
+      ]
+    : [
+        { href: "/dashboard", label: "Home", icon: "📊" },
+        { href: "/patients", label: "Patients", icon: "👥" },
+        { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
+        { href: "/screenings", label: "Records", icon: "📋" },
+        { href: "/reports", label: "Export", icon: "📤" },
+      ];
 
   return (
     <>
@@ -64,11 +79,15 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         </div>
       </div>
 
-      {/* Mobile top bar - compact */}
+      {/* Mobile top bar */}
       <div className="d-md-none w-100 d-flex align-items-center justify-content-between px-3"
-        style={{ background: "#1a5276", position: "sticky", top: 0, zIndex: 1000, height: 48, minHeight: 48 }}>
+        style={{
+          background: "#1a5276", position: "sticky", top: 0,
+          zIndex: 1000, height: 48, minHeight: 48
+        }}>
         <Link href="/dashboard" className="text-white text-decoration-none fw-bold"
-          style={{ fontSize: "0.8rem", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          style={{ fontSize: "0.8rem", flex: 1, whiteSpace: "nowrap",
+            overflow: "hidden", textOverflow: "ellipsis" }}>
           OGH SCD E-Tracker
         </Link>
         <div style={{ flexShrink: 0, marginLeft: 8 }}>
@@ -80,42 +99,29 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
       <div className="d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow"
         style={{ zIndex: 999 }}>
         <div className="d-flex justify-content-around py-1">
-          <Link href="/dashboard" className="text-center text-decoration-none text-muted py-1"
-            style={{ fontSize: "0.6rem", flex: 1 }}>
-            <div style={{ fontSize: "1.2rem" }}>📊</div>
-            <div>Home</div>
-          </Link>
-          <Link href="/patients" className="text-center text-decoration-none text-muted py-1"
-            style={{ fontSize: "0.6rem", flex: 1 }}>
-            <div style={{ fontSize: "1.2rem" }}>👥</div>
-            <div>Patients</div>
-          </Link>
-          <Link href="/screenings/new" className="text-center text-decoration-none py-1"
-            style={{ fontSize: "0.6rem", flex: 1 }}>
-            <div className="rounded-circle d-inline-flex align-items-center justify-content-center text-white"
-              style={{ width: 36, height: 36, background: "#1a5276", fontSize: "1rem", marginTop: -10 }}>
-              ➕
-            </div>
-            <div className="text-muted">New</div>
-          </Link>
-          <Link href="/screenings" className="text-center text-decoration-none text-muted py-1"
-            style={{ fontSize: "0.6rem", flex: 1 }}>
-            <div style={{ fontSize: "1.2rem" }}>📋</div>
-            <div>Records</div>
-          </Link>
-          {(role === "MANAGER" || role === "ADMIN") ? (
-            <Link href="/review" className="text-center text-decoration-none text-muted py-1"
-              style={{ fontSize: "0.6rem", flex: 1 }}>
-              <div style={{ fontSize: "1.2rem" }}>🔍</div>
-              <div>Review</div>
+          {mobileBottomLinks.map(item => (
+            <Link key={item.href} href={item.href}
+              className="text-center text-decoration-none py-1"
+              style={{ fontSize: "0.6rem", flex: 1, color: active === item.href ? "#1a5276" : "#6c757d" }}>
+              {(item as { highlight?: boolean }).highlight ? (
+                <>
+                  <div className="rounded-circle d-inline-flex align-items-center justify-content-center text-white"
+                    style={{
+                      width: 36, height: 36, background: "#1a5276",
+                      fontSize: "1rem", marginTop: -10
+                    }}>
+                    {item.icon}
+                  </div>
+                  <div style={{ color: "#6c757d" }}>{item.label}</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: "1.2rem" }}>{item.icon}</div>
+                  <div>{item.label}</div>
+                </>
+              )}
             </Link>
-          ) : (
-            <Link href="/reports" className="text-center text-decoration-none text-muted py-1"
-              style={{ fontSize: "0.6rem", flex: 1 }}>
-              <div style={{ fontSize: "1.2rem" }}>📤</div>
-              <div>Export</div>
-            </Link>
-          )}
+          ))}
         </div>
       </div>
     </>
