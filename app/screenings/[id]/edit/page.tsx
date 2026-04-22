@@ -4,8 +4,14 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
 const RESULTS = [
-  "Normal (AA)", "Sickle Cell Trait (AS)", "Sickle Cell Disease (SS)",
-  "Sickle-C Disease (SC)", "Other Haemoglobinopathy", "Inconclusive"
+  "Normal (AA)",
+  "Sickle Cell Trait (AS)",
+  "Sickle Cell Disease (SS)",
+  "Sickle-C Disease (SC)",
+  "Haemoglobin C Trait (AC)",
+  "Haemoglobin C Disease (CC)",
+  "Other Haemoglobinopathy",
+  "Inconclusive"
 ];
 
 export default function EditScreeningPage() {

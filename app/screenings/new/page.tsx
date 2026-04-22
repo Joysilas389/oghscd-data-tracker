@@ -8,8 +8,14 @@ const LOCALITIES = [
   "Akim Swedru","Akim Asafo","Kukurantumi","Koforidua","Kade","Other"
 ];
 const RESULTS = [
-  "Normal (AA)","Sickle Cell Trait (AS)","Sickle Cell Disease (SS)",
-  "Sickle-C Disease (SC)","Other Haemoglobinopathy","Inconclusive"
+  "Normal (AA)",
+  "Sickle Cell Trait (AS)",
+  "Sickle Cell Disease (SS)",
+  "Sickle-C Disease (SC)",
+  "Haemoglobin C Trait (AC)",
+  "Haemoglobin C Disease (CC)",
+  "Other Haemoglobinopathy",
+  "Inconclusive"
 ];
 
 interface DuplicatePatient {
