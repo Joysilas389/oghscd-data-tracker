@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
+import UnreadBadge from "./UnreadBadge";
 
 interface Props {
   role: string;
@@ -74,6 +75,8 @@ const moreScreenerLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
+  { href: "/chat", label: "Messages", icon: "💬" },
+  { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 const moreManagerLinks = [
@@ -83,6 +86,7 @@ const moreManagerLinks = [
   { href: "/print", label: "Print Report", icon: "🖨️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
+  { href: "/chat", label: "Messages", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -134,6 +138,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
               }}>
               <span>{item.icon}</span>
               <span>{item.label}</span>
+              {item.href === "/chat" && <UnreadBadge />}
             </Link>
           ))}
         </nav>

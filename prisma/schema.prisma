@@ -25,6 +25,11 @@ model User {
   screenings         Screening[]
   auditLogs          AuditLog[]  @relation("AuditActor")
   reviewedScreenings Screening[] @relation("Reviewer")
+  sentMessages       Message[]   @relation("SentMessages")
+  receivedMessages   Message[]   @relation("ReceivedMessages")
+  sentReplies        Reply[]     @relation("SentReplies")
+  announcements      Announcement[] @relation("Announcements")
+  announcementReads  AnnouncementRead[] @relation("AnnouncementReads")
 }
 
 model Facility {
@@ -162,4 +167,71 @@ enum ReviewStatus {
   APPROVED
   FLAGGED
   CORRECTED
+}
+
+model Message {
+  id              String    @id @default(cuid())
+  senderId        String
+  receiverId      String
+  subject         String
+  body            String
+  fileUrl         String?
+  fileName        String?
+  fileSize        Int?
+  screeningId     String?
+  isReadByReceiver Boolean  @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sender          User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiver        User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  replies         Reply[]
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+model Reply {
+  id          String   @id @default(cuid())
+  messageId   String
+  senderId    String
+  body        String
+  fileUrl     String?
+  fileName    String?
+  fileSize    Int?
+  createdAt   DateTime @default(now())
+
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  sender      User     @relation("SentReplies", fields: [senderId], references: [id])
+
+  @@index([messageId])
+  @@index([senderId])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  authorId    String
+  title       String
+  body        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User     @relation("Announcements", fields: [authorId], references: [id])
+  reads       AnnouncementRead[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model AnnouncementRead {
+  id             String       @id @default(cuid())
+  announcementId String
+  userId         String
+  readAt         DateTime     @default(now())
+
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user           User         @relation("AnnouncementReads", fields: [userId], references: [id])
+
+  @@unique([announcementId, userId])
 }

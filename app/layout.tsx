@@ -2,7 +2,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.css";
 import type { Metadata } from "next";
 import PWAInstall from "@/components/PWAInstall";
-import Watermark from "@/components/Watermark";
 
 export const metadata: Metadata = {
   title: "OGH SCD E-Tracker",
@@ -37,7 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
-        <Watermark />
         <PWAInstall />
         <script dangerouslySetInnerHTML={{ __html: `
           document.addEventListener('contextmenu', function(e) {
