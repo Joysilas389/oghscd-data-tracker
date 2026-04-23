@@ -79,10 +79,40 @@ export default function DashboardCharts({
     resultCounts.map(d => d.count),
     COLORS, "Results");
 
-  useChart(resultPieRef, "doughnut",
-    resultCounts.map(d => d.label),
-    resultCounts.map(d => d.count),
-    COLORS, "Results");
+  useEffect(() => {
+    if (!resultPieRef.current) return;
+    const ctx = resultPieRef.current.getContext("2d");
+    if (!ctx) return;
+    const total = resultCounts.reduce((sum, d) => sum + d.count, 0);
+    const chart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: resultCounts.map(d => d.label),
+        datasets: [{
+          data: resultCounts.map(d => d.count),
+          backgroundColor: COLORS,
+          borderColor: COLORS,
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true, position: "bottom" },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const count = context.parsed;
+                const pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+                return context.label + ": " + count + " (" + pct + "%)";
+              }
+            }
+          }
+        }
+      },
+    });
+    return () => chart.destroy();
+  }, []);
 
   useChart(typeRef, "doughnut",
     typeCounts.map(d => d.label === "CATCH_UP" ? "Catch-Up" : "Newborn"),
