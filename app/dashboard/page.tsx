@@ -158,7 +158,7 @@ export default async function DashboardPage({
     { label: "Total Screenings", value: total, color: "#1a5276", icon: "🔬" },
     { label: "This Week", value: thisWeek, color: "#117a8b", icon: "📅" },
     { label: "This Month", value: thisMonth, color: "#0d6efd", icon: "🗓️" },
-    { label: "Pending Review", value: pending, color: "#dc3545", icon: "⏳",
+    { label: "Pending Review", value: pending, color: "#dc3545", icon: "⏳", alert: true,
       link: session.role !== "SCREENER" ? "/review" : undefined },
     { label: "Catch-Up", value: catchUp, color: "#6f42c1", icon: "📌" },
     { label: "Newborn", value: newborn, color: "#0dcaf0", icon: "👶" },
