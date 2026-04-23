@@ -355,15 +355,6 @@ export default function ChatClient({
 
   return (
     <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
-      {/* Header */}
-      <div className="px-3 px-md-4 py-3 mt-5 mt-md-0"
-        style={{ background: "#1a5276", color: "#fff", flexShrink: 0 }}>
-        <h1 className="h5 fw-bold mb-0">💬 Messages</h1>
-        <div style={{ fontSize: "0.7rem", opacity: 0.7 }}>
-          Internal communication — OGH SCD E-Tracker
-        </div>
-      </div>
-
       {/* Tabs */}
       <div className="d-flex border-bottom bg-white px-2" style={{ flexShrink: 0, overflowX: "auto" }}>
         {[
