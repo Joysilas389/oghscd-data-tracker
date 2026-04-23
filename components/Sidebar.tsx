@@ -18,6 +18,7 @@ const baseLinks = [
   { href: "/patients", label: "Patients", icon: "👥" },
   { href: "/reports", label: "Reports", icon: "📁" },
   { href: "/map", label: "Map", icon: "🗺️" },
+  { href: "/chat", label: "Messages", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -30,6 +31,8 @@ const managerLinks = [
   { href: "/reports", label: "Reports", icon: "📁" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
+  { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
+  { href: "/chat", label: "Messages", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -44,6 +47,7 @@ const adminLinks = [
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
   { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
+  { href: "/chat", label: "Messages", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -52,46 +56,47 @@ const mobileScreenerLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
-  { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/chat", label: "Messages", icon: "💬" },
 ];
 
 const mobileManagerLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
-  { href: "/review", label: "Review", icon: "🔍" },
+  { href: "/chat", label: "Messages", icon: "💬" },
 ];
 
 const mobileAdminLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
-  { href: "/review", label: "Review", icon: "🔍" },
+  { href: "/chat", label: "Messages", icon: "💬" },
 ];
 
 // More modal links per role
 const moreScreenerLinks = [
   { href: "/patients", label: "Patients", icon: "👥" },
+  { href: "/review", label: "Review Queue", icon: "🔍" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
-  { href: "/chat", label: "Messages", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 const moreManagerLinks = [
   { href: "/patients", label: "Patients", icon: "👥" },
+  { href: "/review", label: "Review Queue", icon: "🔍" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
-  { href: "/chat", label: "Messages", icon: "💬" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 const moreAdminLinks = [
   { href: "/patients", label: "Patients", icon: "👥" },
+  { href: "/review", label: "Review Queue", icon: "🔍" },
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
@@ -118,7 +123,7 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
         style={{
           width: 230, minWidth: 230, background: "#1a5276",
           minHeight: "100vh", position: "sticky", top: 0,
-          height: "100vh", overflowY: "auto"
+          height: "100vh", overflowY: "auto",
         }}>
         <div className="text-white fw-bold mb-0" style={{ fontSize: "0.9rem" }}>
           OGH SCD E-Tracker
@@ -185,9 +190,15 @@ export default function Sidebar({ role, fullName, facilityName, active }: Props)
               textDecoration: "none", flex: 1, height: "100%",
               background: item.highlight && active !== item.href
                 ? "rgba(255,255,255,0.1)" : "transparent",
+              position: "relative",
             }}>
             <span style={{ fontSize: "1.2rem" }}>{item.icon}</span>
             <span style={{ fontSize: "0.55rem", marginTop: 1 }}>{item.label}</span>
+            {item.href === "/chat" && (
+              <span style={{ position: "absolute", top: 6, right: "18%" }}>
+                <UnreadBadge />
+              </span>
+            )}
           </Link>
         ))}
 
