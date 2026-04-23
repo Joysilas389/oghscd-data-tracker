@@ -48,6 +48,7 @@ function useChart(
       },
       options: {
         responsive: true,
+        animation: { duration: 1000, easing: "easeOutQuart" },
         plugins: { legend: { display: type === "doughnut" } },
         scales: type !== "doughnut" ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } } : undefined,
       },
@@ -97,6 +98,7 @@ export default function DashboardCharts({
       },
       options: {
         responsive: true,
+        animation: { duration: 1000, easing: "easeOutQuart" },
         plugins: {
           legend: { display: true, position: "bottom" },
           tooltip: {

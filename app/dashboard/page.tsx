@@ -4,18 +4,18 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import DashboardCharts from "@/components/DashboardCharts";
+import AnimatedKPI from "@/components/AnimatedKPI";
+import LiveFeed from "@/components/LiveFeed";
+import HeatCalendar from "@/components/HeatCalendar";
+import FlaggedRecordsAlert from "@/components/FlaggedRecordsAlert";
 
 function getDateRange(filter: string) {
   const now = new Date();
   switch (filter) {
-    case "week":
-      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    case "month":
-      return new Date(now.getFullYear(), now.getMonth(), 1);
-    case "year":
-      return new Date(now.getFullYear(), 0, 1);
-    default:
-      return null;
+    case "week": return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    case "month": return new Date(now.getFullYear(), now.getMonth(), 1);
+    case "year": return new Date(now.getFullYear(), 0, 1);
+    default: return null;
   }
 }
 
@@ -30,14 +30,13 @@ export default async function DashboardPage({
   const filter = searchParams.filter || "all";
   const since = getDateRange(filter);
   const dateWhere = since ? { screeningDatetime: { gte: since } } : {};
+  const baseWhere = { archivedAt: null, ...dateWhere };
 
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const baseWhere = { archivedAt: null, ...dateWhere };
-
-  const [total, thisWeek, thisMonth, pending, catchUp, newborn, treatment, patients, myFlagged] =
+  const [total, thisWeek, thisMonth, pending, catchUp, newborn, treatment, patients] =
     await Promise.all([
       prisma.screening.count({ where: { archivedAt: null, ...dateWhere } }),
       prisma.screening.count({ where: { archivedAt: null, screeningDatetime: { gte: weekAgo } } }),
@@ -47,17 +46,55 @@ export default async function DashboardPage({
       prisma.screening.count({ where: { archivedAt: null, screeningType: "NEWBORN", ...dateWhere } }),
       prisma.screening.count({ where: { archivedAt: null, treatmentStarted: true, ...dateWhere } }),
       prisma.patient.count({ where: { archivedAt: null } }),
-    prisma.screening.count({ where: { archivedAt: null, reviewStatus: "FLAGGED", enteredById: session.userId } }),
     ]);
 
-  const recent = await prisma.screening.findMany({
+  const myFlagged = session.role === "SCREENER"
+    ? await prisma.screening.count({
+        where: { archivedAt: null, reviewStatus: "FLAGGED", enteredById: session.userId }
+      })
+    : 0;
+
+  const flaggedRecords = session.role === "SCREENER"
+    ? await prisma.screening.findMany({
+        where: { archivedAt: null, reviewStatus: "FLAGGED", enteredById: session.userId },
+        include: { patient: { select: { firstName: true, lastName: true, patientCode: true } } },
+        orderBy: { updatedAt: "desc" },
+      })
+    : [];
+
+  // Live feed - latest 5 screenings
+  const recentScreenings = await prisma.screening.findMany({
     where: { archivedAt: null },
     orderBy: { createdAt: "desc" },
     take: 5,
     include: {
-      patient: { select: { patientCode: true, firstName: true, lastName: true, id: true } },
+      patient: { select: { firstName: true, lastName: true, patientCode: true, locality: true } },
     },
   });
+
+  const feedItems = recentScreenings.map(s => ({
+    id: s.id,
+    patientName: `${s.patient.firstName} ${s.patient.lastName}`,
+    patientCode: s.patient.patientCode,
+    result: s.screeningResult,
+    locality: s.patient.locality || "",
+    createdAt: s.createdAt.toISOString(),
+  }));
+
+  // Heat calendar - last 70 days
+  const heatData = await Promise.all(
+    Array.from({ length: 70 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (69 - i));
+      d.setHours(0, 0, 0, 0);
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      const key = d.toISOString().slice(0, 10);
+      return prisma.screening.count({
+        where: { archivedAt: null, screeningDatetime: { gte: d, lt: next } },
+      }).then(count => ({ date: key, count }));
+    })
+  );
 
   const resultCounts = await prisma.screening.groupBy({
     by: ["screeningResult"],
@@ -91,7 +128,6 @@ export default async function DashboardPage({
     _count: { id: true },
   });
 
-  // Last 7 days trend
   const trendData = await Promise.all(
     Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
@@ -115,11 +151,20 @@ export default async function DashboardPage({
   });
 
   const filterLabels: Record<string, string> = {
-    all: "All Time",
-    week: "This Week",
-    month: "This Month",
-    year: "This Year",
+    all: "All Time", week: "This Week", month: "This Month", year: "This Year",
   };
+
+  const kpis = [
+    { label: "Total Screenings", value: total, color: "#1a5276", icon: "🔬" },
+    { label: "This Week", value: thisWeek, color: "#117a8b", icon: "📅" },
+    { label: "This Month", value: thisMonth, color: "#0d6efd", icon: "🗓️" },
+    { label: "Pending Review", value: pending, color: "#dc3545", icon: "⏳",
+      link: session.role !== "SCREENER" ? "/review" : undefined },
+    { label: "Catch-Up", value: catchUp, color: "#6f42c1", icon: "📌" },
+    { label: "Newborn", value: newborn, color: "#0dcaf0", icon: "👶" },
+    { label: "On Treatment", value: treatment, color: "#198754", icon: "💊" },
+    { label: "Total Patients", value: patients, color: "#fd7e14", icon: "👥" },
+  ];
 
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
@@ -146,144 +191,43 @@ export default async function DashboardPage({
         <div className="d-flex gap-2 flex-wrap mb-4">
           {Object.entries(filterLabels).map(([key, label]) => (
             <a key={key} href={`/dashboard?filter=${key}`}
-              className={`btn btn-sm ${filter === key
-                ? "text-white" : "btn-outline-secondary"}`}
+              className={`btn btn-sm ${filter === key ? "text-white" : "btn-outline-secondary"}`}
               style={filter === key ? { background: "#1a5276" } : {}}>
               {label}
             </a>
           ))}
         </div>
 
-        { myFlagged > 0 && session.role === "SCREENER" && (
-          <div className="alert alert-danger d-flex align-items-center gap-2 mb-3">
-            <span style={{ fontSize: "1.2rem" }}>🚩</span>
-            <div>
-              <strong>You have {myFlagged} flagged record{myFlagged > 1 ? "s" : ""}</strong> that need attention.
-              Please contact your Manager or HIM to review and correct.
-              <a href="/screenings?status=FLAGGED" className="alert-link ms-2">View flagged records →</a>
-            </div>
-          </div>
-        )}
-        {/* KPI Cards */}
-        <div className="row g-3 mb-4">
-          {[
-            { label: "Total Screenings", value: total, color: "#1a5276", icon: "🔬" },
-            { label: "This Week", value: thisWeek, color: "#117a8b", icon: "📅" },
-            { label: "This Month", value: thisMonth, color: "#0d6efd", icon: "🗓️" },
-            { label: "Pending Review", value: pending, color: "#dc3545", icon: "⏳",
-              link: session.role !== "SCREENER" ? "/review" : undefined },
-            { label: "Catch-Up", value: catchUp, color: "#6f42c1", icon: "📌" },
-            { label: "Newborn", value: newborn, color: "#0dcaf0", icon: "👶" },
-            { label: "On Treatment", value: treatment, color: "#198754", icon: "💊" },
-            { label: "Total Patients", value: patients, color: "#fd7e14", icon: "👥" },
-          ].map(k => (
-            <div key={k.label} className="col-6 col-md-3">
-              {k.link ? (
-                <Link href={k.link} className="text-decoration-none">
-                  <div className="card border-0 shadow-sm h-100"
-                    style={{ borderLeft: `4px solid ${k.color}` }}>
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-start">
-                        <div>
-                          <div className="text-muted small">{k.label}</div>
-                          <div className="fw-bold" style={{ fontSize: "1.6rem", color: k.color }}>
-                            {k.value}
-                          </div>
-                        </div>
-                        <span style={{ fontSize: "1.4rem" }}>{k.icon}</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="card border-0 shadow-sm h-100"
-                  style={{ borderLeft: `4px solid ${k.color}` }}>
-                  <div className="card-body p-3">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div className="text-muted small">{k.label}</div>
-                        <div className="fw-bold" style={{ fontSize: "1.6rem", color: k.color }}>
-                          {k.value}
-                        </div>
-                      </div>
-                      <span style={{ fontSize: "1.4rem" }}>{k.icon}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {/* Flagged alert for screeners */}
+        <FlaggedRecordsAlert flagged={flaggedRecords.map(s => ({
+          id: s.id,
+          reviewNote: s.reviewNote,
+          screeningDatetime: s.screeningDatetime.toISOString(),
+          patient: s.patient,
+        }))} />
+
+        {/* Animated KPI Cards */}
+        <AnimatedKPI kpis={kpis} />
+
+        {/* Live Feed */}
+        <LiveFeed initial={feedItems} />
+
+        {/* Heat Calendar */}
+        <HeatCalendar data={heatData} />
 
         {/* Charts */}
         <DashboardCharts
           trendData={trendData}
-          resultCounts={resultCounts.map(r => ({
-            label: r.screeningResult, count: r._count.id,
-          }))}
-          typeCounts={typeCounts.map(t => ({
-            label: t.screeningType, count: t._count.id,
-          }))}
-          statusCounts={statusCounts.map(s => ({
-            label: s.reviewStatus, count: s._count.id,
-          }))}
-          localityCounts={localityCounts.map(l => ({
-            label: l.locality ?? "Unknown", count: l._count.id,
-          }))}
+          resultCounts={resultCounts.map(r => ({ label: r.screeningResult, count: r._count.id }))}
+          typeCounts={typeCounts.map(t => ({ label: t.screeningType, count: t._count.id }))}
+          statusCounts={statusCounts.map(s => ({ label: s.reviewStatus, count: s._count.id }))}
+          localityCounts={localityCounts.map(l => ({ label: l.locality ?? "Unknown", count: l._count.id }))}
           treatmentCounts={treatmentCounts.map(t => ({
-            label: t.treatmentStarted ? "On Treatment" : "Not Started",
-            count: t._count.id,
+            label: t.treatmentStarted ? "On Treatment" : "Not Started", count: t._count.id,
           }))}
-          sexCounts={sexCounts.map(s => ({
-            label: s.sex, count: s._count.id,
-          }))}
+          sexCounts={sexCounts.map(s => ({ label: s.sex, count: s._count.id }))}
           filterLabel={filterLabels[filter]}
         />
-
-        {/* Recent screenings */}
-        <div className="card border-0 shadow-sm mt-4 mb-5 mb-md-2">
-          <div className="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-            <span>🕐 Recent Screenings</span>
-            <Link href="/screenings" className="btn btn-sm btn-outline-secondary">
-              View All
-            </Link>
-          </div>
-          <div className="card-body p-0">
-            {recent.length === 0 ? (
-              <div className="text-center text-muted py-4 small">No screenings yet</div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-hover mb-0 small align-middle">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Patient</th>
-                      <th>Code</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recent.map(s => (
-                      <tr key={s.id}>
-                        <td>
-                          <Link href={`/screenings/${s.id}`}
-                            className="text-decoration-none fw-semibold">
-                            {s.patient.firstName} {s.patient.lastName}
-                          </Link>
-                        </td>
-                        <td style={{ fontFamily: "monospace", fontSize: "0.75rem" }}>
-                          {s.patient.patientCode}
-                        </td>
-                        <td className="text-muted">
-                          {new Date(s.createdAt).toLocaleDateString("en-GB")}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
