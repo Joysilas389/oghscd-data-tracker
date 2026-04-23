@@ -7,7 +7,7 @@ import { z } from "zod";
 const UpdatePatientSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  sex: z.enum(["MALE", "FEMALE", "OTHER"]),
+  sex: z.enum(["MALE", "FEMALE"]),
   dateOfBirth: z.string().min(1),
   phoneNumber: z.string().default(""),
   ethnicity: z.string().optional().default(""),

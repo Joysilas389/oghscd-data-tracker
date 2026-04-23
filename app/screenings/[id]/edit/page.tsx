@@ -188,7 +188,7 @@ export default function EditScreeningPage() {
                 <select className="form-select" value={patient.sex} onChange={setP("sex")}>
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
+                  
                 </select>
               </div>
               <div className="col-md-6">
