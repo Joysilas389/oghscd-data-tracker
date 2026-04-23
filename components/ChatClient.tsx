@@ -13,7 +13,7 @@ interface MessageItem {
 }
 interface ReplyItem {
   id: string; body: string; sender: User;
-  fileUrl?: string | null; fileName?: string | null;
+  fileUrl?: string | null; fileName?: string | null; fileSize?: number | null;
   createdAt: string;
 }
 interface AnnouncementItem {
