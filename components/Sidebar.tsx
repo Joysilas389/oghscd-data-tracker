@@ -45,7 +45,7 @@ const adminLinks = [
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
-// Mobile bottom nav - max 4 items + More button
+// Mobile bottom nav — 4 visible + More button
 const mobileScreenerLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
   { href: "/screenings", label: "Records", icon: "📋" },
@@ -55,16 +55,16 @@ const mobileScreenerLinks = [
 
 const mobileManagerLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
+  { href: "/screenings", label: "Records", icon: "📋" },
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
   { href: "/review", label: "Review", icon: "🔍" },
-  { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 const mobileAdminLinks = [
   { href: "/dashboard", label: "Home", icon: "📊" },
+  { href: "/screenings", label: "Records", icon: "📋" },
   { href: "/screenings/new", label: "New", icon: "➕", highlight: true },
-  { href: "/admin/users", label: "Users", icon: "⚙️" },
-  { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/review", label: "Review", icon: "🔍" },
 ];
 
 // More modal links per role
@@ -73,7 +73,6 @@ const moreScreenerLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
-  { href: "/screenings", label: "All Records", icon: "📋" },
 ];
 
 const moreManagerLinks = [
@@ -81,8 +80,8 @@ const moreManagerLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
-  { href: "/screenings", label: "All Records", icon: "📋" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
+  { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 const moreAdminLinks = [
@@ -90,9 +89,9 @@ const moreAdminLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
-  { href: "/screenings", label: "All Records", icon: "📋" },
-  { href: "/review", label: "Review Queue", icon: "🔍" },
+  { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
+  { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 export default function Sidebar({ role, fullName, facilityName, active }: Props) {
