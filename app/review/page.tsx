@@ -5,6 +5,7 @@ import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import ReviewActions from "@/components/ReviewActions";
 import ReviewSearch from "@/components/ReviewSearch";
+import BulkReviewControls from "@/components/BulkReviewControls";
 
 export default async function ReviewPage({
   searchParams,
@@ -46,6 +47,14 @@ export default async function ReviewPage({
     CORRECTED: "bg-info text-dark",
   };
 
+  const bulkItems = pending.map(s => ({
+    id: s.id,
+    patientName: `${s.patient.firstName} ${s.patient.lastName}`,
+    patientCode: s.patient.patientCode,
+    result: s.screeningResult,
+    status: s.reviewStatus,
+  }));
+
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
       <Sidebar role={session.role} fullName={session.fullName}
@@ -53,6 +62,7 @@ export default async function ReviewPage({
       <div className="flex-grow-1 p-3 p-md-4"
         style={{ background: "#f8f9fa", minWidth: 0, paddingBottom: "120px" }}>
 
+        {/* Header */}
         <div className="mb-3 mt-5 mt-md-0 pt-3">
           <h1 className="h4 fw-bold mb-0">Review Queue</h1>
           <p className="text-muted small mb-0">
@@ -85,9 +95,15 @@ export default async function ReviewPage({
               <strong>{pending.length}</strong> record(s) awaiting review
               {q && <span className="ms-1">matching "<strong>{q}</strong>"</span>}
             </div>
-            <div className="d-flex flex-column gap-3" style={{ paddingBottom: "100px" }}>
+
+            {/* Bulk controls wraps everything */}
+            <BulkReviewControls screenings={bulkItems} />
+
+            {/* Individual cards rendered server-side for performance */}
+            <div className="d-flex flex-column gap-3 mt-3" style={{ paddingBottom: "100px" }}>
               {pending.map(s => (
-                <div key={s.id} className="card border-0 shadow-sm">
+                <div key={s.id} className="card border-0 shadow-sm"
+                  data-id={s.id}>
                   <div className="card-body p-3">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <div>
