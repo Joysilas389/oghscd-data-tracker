@@ -6,10 +6,10 @@ import Link from "next/link";
 const RESULTS = [
   "Normal (AA)",
   "Sickle Cell Trait (AS)",
-  "Sickle Cell Disease (SS)",
+  "Haemoglobin S",
   "Sickle-C Disease (SC)",
   "Haemoglobin C Trait (AC)",
-  "Haemoglobin C Disease (CC)",
+  "Haemoglobin C",
   "Other Haemoglobinopathy",
   "Inconclusive"
 ];
