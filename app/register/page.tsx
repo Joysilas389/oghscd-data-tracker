@@ -4,16 +4,25 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const CADRES = [
-  "Medical Officer", "Physician Assistant", "Registered Nurse",
-  "Midwife", "Community Health Nurse", "Health Information Officer",
-  "Laboratory Scientist", "Laboratory Technician", "Other"
+  "Medical Officer",
+  "Physician Assistant",
+  "Registered Nurse",
+  "Senior Nursing Officer (PH)",
+  "Midwife",
+  "Community Health Nurse",
+  "Health Information Officer",
+  "Laboratory Scientist",
+  "Laboratory Technician",
+  "Technical Officer (Health Promotion)",
+  "Pharmacist",
+  "Other",
 ];
 
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({
     fullName: "", cadre: "", facilityName: "Oda Government Hospital",
-    email: "", password: "", confirm: ""
+    email: "", password: "", confirm: "", otherCadre: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,6 +32,7 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (form.cadre === "Other" && !form.otherCadre.trim()) { setError("Please specify your cadre / designation"); return; }
     if (form.password !== form.confirm) { setError("Passwords do not match"); return; }
     if (form.password.length < 8) { setError("Password must be at least 8 characters"); return; }
     setLoading(true); setError("");
@@ -31,7 +41,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: form.fullName, cadre: form.cadre,
+          fullName: form.fullName, cadre: form.cadre === "Other" ? form.otherCadre : form.cadre,
           facilityName: form.facilityName, email: form.email, password: form.password
         }),
       });
@@ -75,10 +85,25 @@ export default function RegisterPage() {
                   </div>
                   <div className="mb-3">
                     <label className="form-label small fw-semibold">Cadre / Designation *</label>
-                    <select className="form-select" value={form.cadre} onChange={set("cadre")} required>
+                    <select className="form-select" value={form.cadre === "Other" || !CADRES.includes(form.cadre) && form.cadre !== "" ? "Other" : form.cadre} onChange={e => {
+                      if (e.target.value === "Other") {
+                        setForm(p => ({ ...p, cadre: "Other" }));
+                      } else {
+                        setForm(p => ({ ...p, cadre: e.target.value }));
+                      }
+                    }} required={form.cadre !== "Other"}>
                       <option value="">Select cadre...</option>
                       {CADRES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    {form.cadre === "Other" && (
+                      <input
+                        className="form-control mt-2"
+                        placeholder="Please specify your cadre / designation *"
+                        value={form.otherCadre ?? ""}
+                        onChange={e => setForm(p => ({ ...p, otherCadre: e.target.value }))}
+                        required
+                      />
+                    )}
                   </div>
                   <div className="mb-3">
                     <label className="form-label small fw-semibold">Facility Name *</label>
