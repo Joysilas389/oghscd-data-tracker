@@ -356,7 +356,7 @@ export default function ChatClient({
   return (
     <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
       {/* Tabs */}
-      <div className="d-flex border-bottom bg-white px-2 mt-5 mt-md-0" style={{ flexShrink: 0, overflowX: "auto" }}>
+      <div className="d-flex border-bottom bg-white px-2" style={{ flexShrink: 0, overflowX: "auto", paddingTop: 72 }}>
         {[
           { key: "announcements", label: "📢 Announcements", badge: unreadAnn },
           { key: "inbox", label: "📥 Inbox", badge: unreadInbox },
