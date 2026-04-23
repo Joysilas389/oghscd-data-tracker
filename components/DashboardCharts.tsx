@@ -62,6 +62,7 @@ export default function DashboardCharts({
 }: Props) {
   const trendRef = useRef<HTMLCanvasElement>(null);
   const resultRef = useRef<HTMLCanvasElement>(null);
+  const resultPieRef = useRef<HTMLCanvasElement>(null);
   const typeRef = useRef<HTMLCanvasElement>(null);
   const statusRef = useRef<HTMLCanvasElement>(null);
   const localityRef = useRef<HTMLCanvasElement>(null);
@@ -74,6 +75,11 @@ export default function DashboardCharts({
     [COLORS[0]], "Screenings");
 
   useChart(resultRef, "bar",
+    resultCounts.map(d => d.label),
+    resultCounts.map(d => d.count),
+    COLORS, "Results");
+
+  useChart(resultPieRef, "doughnut",
     resultCounts.map(d => d.label),
     resultCounts.map(d => d.count),
     COLORS, "Results");
@@ -106,6 +112,7 @@ export default function DashboardCharts({
   const charts = [
     { title: `📈 7-Day Trend`, ref: trendRef },
     { title: `🔬 Results Breakdown`, ref: resultRef },
+    { title: `🥧 Results Distribution`, ref: resultPieRef },
     { title: `🍩 Screening Type`, ref: typeRef },
     { title: `✅ Review Status`, ref: statusRef },
     { title: `📍 Top Localities`, ref: localityRef },
