@@ -243,7 +243,7 @@ export default function ChatClient({
     const other = selectedMessage.sender.id === currentUser.id
       ? selectedMessage.receiver : selectedMessage.sender;
     return (
-      <div className="d-flex flex-column" style={{ height: "100vh", maxHeight: "100vh" }}>
+      <div className="d-flex flex-column" style={{ height: "100vh", maxHeight: "100vh", paddingTop: 72, paddingBottom: 60, boxSizing: "border-box" }}>
         {/* Thread header */}
         <div className="d-flex align-items-center gap-3 px-3 px-md-4 py-3"
           style={{ background: "#1a5276", color: "#fff", flexShrink: 0 }}>
@@ -319,7 +319,7 @@ export default function ChatClient({
         </div>
 
         {/* Reply box */}
-        <div className="p-3 p-md-4" style={{ background: "#fff", borderTop: "1px solid #dee2e6", flexShrink: 0 }}>
+        <div className="p-3 p-md-4" style={{ background: "#fff", borderTop: "1px solid #dee2e6", flexShrink: 0, paddingBottom: 24 }}>
           {replyFile && (
             <div className="d-flex align-items-center gap-2 mb-2 small text-muted">
               <span>📎 {replyFile.name}</span>
