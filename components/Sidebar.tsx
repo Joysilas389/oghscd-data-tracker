@@ -42,6 +42,7 @@ const adminLinks = [
   { href: "/map", label: "Map", icon: "🗺️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
+  { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -81,6 +82,7 @@ const moreManagerLinks = [
   { href: "/reports", label: "Reports & Export", icon: "📁" },
   { href: "/print", label: "Print Report", icon: "🖨️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
+  { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -91,6 +93,7 @@ const moreAdminLinks = [
   { href: "/print", label: "Print Report", icon: "🖨️" },
   { href: "/admin/users", label: "User Management", icon: "⚙️" },
   { href: "/admin/audit", label: "Audit Log", icon: "📜" },
+  { href: "/bin", label: "Recycle Bin", icon: "🗑️" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
