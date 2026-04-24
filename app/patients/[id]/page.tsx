@@ -23,6 +23,18 @@ export default async function PatientDetailPage({ params }: Props) {
         orderBy: { screeningDatetime: "desc" },
         include: { enteredBy: { select: { fullName: true } } },
       },
+      siblings: {
+        include: {
+          sibling: {
+            select: {
+              id: true, patientCode: true,
+              firstName: true, lastName: true,
+              sex: true, dateOfBirth: true,
+              isMultipleBirth: true, multipleBirthType: true, birthOrder: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -41,9 +53,68 @@ export default async function PatientDetailPage({ params }: Props) {
       <div className="flex-grow-1 p-3 p-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
         <div className="mb-4 mt-5 mt-md-0 pt-3">
           <Link href="/patients" className="text-muted small text-decoration-none">← All Patients</Link>
-          <h1 className="h4 fw-bold mb-0 mt-1">{patient.firstName} {patient.lastName}</h1>
+          <div className="d-flex align-items-center gap-2 flex-wrap mt-1">
+            <h1 className="h4 fw-bold mb-0">{patient.firstName} {patient.lastName}</h1>
+            <MultipleBirthBadge
+              isMultipleBirth={patient.isMultipleBirth}
+              multipleBirthType={patient.multipleBirthType}
+              birthOrder={patient.birthOrder}
+              size="md"
+            />
+          </div>
           <span className="font-monospace small text-muted">{patient.patientCode}</span>
         </div>
+
+        {/* Siblings card */}
+        {patient.isMultipleBirth && (
+          <div className="card border-0 shadow-sm mb-4"
+            style={{ borderLeft: "4px solid #6f42c1" }}>
+            <div className="card-header py-2"
+              style={{ background: "#f0e6ff", borderBottom: "1px solid #d6b8ff" }}>
+              <div className="d-flex align-items-center gap-2">
+                <span>👥</span>
+                <span className="fw-semibold small" style={{ color: "#6f42c1" }}>
+                  {patient.multipleBirthType || "Multiple Birth"} Siblings
+                  ({patient.siblings.length})
+                </span>
+              </div>
+            </div>
+            <div className="card-body p-3">
+              {patient.siblings.length === 0 ? (
+                <div className="small text-muted">
+                  No siblings linked yet. Edit this patient to link sibling records.
+                </div>
+              ) : (
+                <div className="d-flex flex-column gap-2">
+                  {patient.siblings.map(({ sibling: s }) => (
+                    <div key={s.id}
+                      className="d-flex align-items-center justify-content-between p-2 rounded flex-wrap gap-2"
+                      style={{ background: "#f8f0ff", border: "1px solid #d6b8ff" }}>
+                      <div className="small">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fw-semibold">{s.firstName} {s.lastName}</span>
+                          <MultipleBirthBadge
+                            isMultipleBirth={s.isMultipleBirth}
+                            multipleBirthType={s.multipleBirthType}
+                            birthOrder={s.birthOrder}
+                          />
+                        </div>
+                        <div className="text-muted font-monospace" style={{ fontSize: "0.7rem" }}>
+                          {s.patientCode} · {s.sex} · {new Date(s.dateOfBirth).toLocaleDateString("en-GB")}
+                        </div>
+                      </div>
+                      <Link href={`/patients/${s.id}`}
+                        className="btn btn-sm text-white"
+                        style={{ background: "#6f42c1", fontSize: "0.75rem" }}>
+                        View →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="card border-0 shadow-sm mb-4">
           <div className="card-header bg-white fw-semibold">Patient Information</div>
