@@ -60,6 +60,7 @@ model Patient {
   matchHash          String?
   isMultipleBirth    Boolean   @default(false)
   multipleBirthType  String?
+  birthOrder         Int?
   createdById        String
   siblings           PatientSibling[] @relation("PatientSiblings")
   siblingOf          PatientSibling[] @relation("SiblingOf")

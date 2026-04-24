@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
+import MultipleBirthBadge from "@/components/MultipleBirthBadge";
 import PatientsSearch from "@/components/PatientsSearch";
 
 export default async function PatientsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {

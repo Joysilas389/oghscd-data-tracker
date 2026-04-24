@@ -34,7 +34,7 @@ export default async function ReviewPage({
     orderBy: { createdAt: "asc" },
     take: 100,
     include: {
-      patient: { select: { patientCode: true, firstName: true, lastName: true, sex: true } },
+      patient: { select: { patientCode: true, firstName: true, lastName: true, sex: true, isMultipleBirth: true, multipleBirthType: true, birthOrder: true } },
       enteredBy: { select: { fullName: true, cadre: true } },
     },
   });

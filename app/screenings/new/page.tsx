@@ -49,6 +49,7 @@ export default function NewScreeningPage() {
   const [newPatientReasonError, setNewPatientReasonError] = useState("");
   const [isMultipleBirth, setIsMultipleBirth] = useState(false);
   const [multipleBirthType, setMultipleBirthType] = useState("Twin");
+  const [birthOrder, setBirthOrder] = useState<number | null>(null);
   const [siblingSearch, setSiblingSearch] = useState("");
   const [siblingResults, setSiblingResults] = useState<{id:string;patientCode:string;firstName:string;lastName:string;dateOfBirth:string;sex:string}[]>([]);
   const [selectedSiblings, setSelectedSiblings] = useState<{id:string;patientCode:string;firstName:string;lastName:string}[]>([]);
@@ -154,6 +155,7 @@ export default function NewScreeningPage() {
             ...patient,
             isMultipleBirth,
             multipleBirthType: isMultipleBirth ? multipleBirthType : null,
+            birthOrder: isMultipleBirth ? birthOrder : null,
             siblingIds: selectedSiblings.map(s => s.id),
           },
           existingPatientId,

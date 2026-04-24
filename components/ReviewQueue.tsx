@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ReviewActions from "./ReviewActions";
+import MultipleBirthBadge from "./MultipleBirthBadge";
 
 interface Screening {
   id: string;
@@ -11,7 +12,10 @@ interface Screening {
   screeningType: string;
   screeningResult: string;
   treatmentStarted: boolean;
-  patient: { patientCode: string; firstName: string; lastName: string; sex: string };
+  patient: {
+    patientCode: string; firstName: string; lastName: string; sex: string;
+    isMultipleBirth: boolean; multipleBirthType?: string | null; birthOrder?: number | null;
+  };
   enteredBy: { fullName: string; cadre: string };
 }
 

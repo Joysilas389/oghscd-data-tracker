@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import ScreeningRowActions from "@/components/ScreeningRowActions";
+import MultipleBirthBadge from "@/components/MultipleBirthBadge";
 import ScreeningsSearch from "@/components/ScreeningsSearch";
 
 export default async function ScreeningsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -26,7 +27,7 @@ export default async function ScreeningsPage({ searchParams }: { searchParams: P
     orderBy: { screeningDatetime: "desc" },
     take: 100,
     include: {
-      patient: { select: { patientCode: true, firstName: true, lastName: true, id: true } },
+      patient: { select: { patientCode: true, firstName: true, lastName: true, id: true, isMultipleBirth: true, multipleBirthType: true, birthOrder: true } },
       enteredBy: { select: { id: true } },
     },
   });
@@ -87,6 +88,11 @@ export default async function ScreeningsPage({ searchParams }: { searchParams: P
                         <Link href={`/patients/${s.patient.id}`} className="text-decoration-none">
                           {s.patient.firstName} {s.patient.lastName}
                         </Link>
+                        <MultipleBirthBadge
+                          isMultipleBirth={s.patient.isMultipleBirth}
+                          multipleBirthType={s.patient.multipleBirthType}
+                          birthOrder={s.patient.birthOrder}
+                        />
                       </td>
                       <td>
                         <span className={`badge ${s.screeningType === "NEWBORN" ? "bg-info text-dark" : "bg-primary"}`}>

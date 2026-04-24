@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
+import MultipleBirthBadge from "@/components/MultipleBirthBadge";
 
 interface Props {
   params: Promise<{ id: string }>;
