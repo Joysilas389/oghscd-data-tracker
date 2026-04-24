@@ -20,7 +20,7 @@ export default async function ReviewPage({
   const pending = await prisma.screening.findMany({
     where: {
       archivedAt: null,
-      reviewStatus: { in: ["PENDING", "FLAGGED"] },
+      reviewStatus: { in: ["PENDING", "FLAGGED", "CORRECTED"] },
       ...(q ? {
         OR: [
           { patient: { firstName: { contains: q, mode: "insensitive" } } },

@@ -41,6 +41,12 @@ export default function ReviewActions({ screeningId, currentStatus }: Props) {
 
   return (
     <div className="border rounded p-3 bg-light">
+      {/* Show status context */}
+      {currentStatus === "CORRECTED" && (
+        <div className="alert alert-info py-1 small mb-2">
+          ℹ️ Screener has corrected and resubmitted this record. Please review carefully before approving.
+        </div>
+      )}
       <div className="mb-2">
         <label className="form-label small fw-semibold mb-1">
           Review Note
@@ -59,10 +65,6 @@ export default function ReviewActions({ screeningId, currentStatus }: Props) {
         <button onClick={() => handleAction("FLAGGED")} disabled={loading}
           className="btn btn-sm btn-danger">
           🚩 Flag with Reason
-        </button>
-        <button onClick={() => handleAction("CORRECTED")} disabled={loading}
-          className="btn btn-sm btn-info text-white">
-          ✏️ Mark Corrected
         </button>
       </div>
     </div>
