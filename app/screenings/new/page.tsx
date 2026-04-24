@@ -399,21 +399,76 @@ export default function NewScreeningPage() {
 
                   {/* Multiple Birth Section */}
                   <div className="col-12">
-                    <div className="form-check form-switch mb-2">
-                      <input className="form-check-input" type="checkbox" id="isMultipleBirth"
-                        checked={isMultipleBirth}
-                        onChange={e => {
-                          setIsMultipleBirth(e.target.checked);
-                          if (!e.target.checked) {
+                    <label className="form-label small fw-semibold mb-2">
+                      Birth Type
+                    </label>
+                    <div className="row g-2 mb-2">
+                      {/* Singleton card */}
+                      <div className="col-6">
+                        <div
+                          onClick={() => {
+                            setIsMultipleBirth(false);
                             setSelectedSiblings([]);
                             setSiblingSearch("");
                             setSiblingResults([]);
                             setBirthOrder(null);
-                          }
-                        }} />
-                      <label className="form-check-label fw-semibold small" htmlFor="isMultipleBirth">
-                        👥 This patient is from a multiple birth (twin, triplet, etc.)
-                      </label>
+                          }}
+                          style={{
+                            cursor: "pointer",
+                            border: !isMultipleBirth ? "3px solid #1a5276" : "2px solid #dee2e6",
+                            borderRadius: 12,
+                            padding: "16px 12px",
+                            textAlign: "center",
+                            background: !isMultipleBirth ? "#d6eaf8" : "#fff",
+                            transition: "all 0.2s",
+                          }}>
+                          <div style={{ fontSize: "2rem" }}>👤</div>
+                          <div className="fw-bold mt-1" style={{
+                            fontSize: "0.9rem",
+                            color: !isMultipleBirth ? "#1a5276" : "#555",
+                          }}>
+                            Single Baby
+                          </div>
+                          <div className="text-muted" style={{ fontSize: "0.72rem" }}>
+                            One baby only
+                          </div>
+                          {!isMultipleBirth && (
+                            <div className="mt-1" style={{ color: "#1a5276", fontSize: "0.75rem", fontWeight: 700 }}>
+                              ✓ Selected
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {/* Multiple birth card */}
+                      <div className="col-6">
+                        <div
+                          onClick={() => setIsMultipleBirth(true)}
+                          style={{
+                            cursor: "pointer",
+                            border: isMultipleBirth ? "3px solid #6f42c1" : "2px solid #dee2e6",
+                            borderRadius: 12,
+                            padding: "16px 12px",
+                            textAlign: "center",
+                            background: isMultipleBirth ? "#f0e6ff" : "#fff",
+                            transition: "all 0.2s",
+                          }}>
+                          <div style={{ fontSize: "2rem" }}>👥</div>
+                          <div className="fw-bold mt-1" style={{
+                            fontSize: "0.9rem",
+                            color: isMultipleBirth ? "#6f42c1" : "#555",
+                          }}>
+                            Multiple Birth
+                          </div>
+                          <div className="text-muted" style={{ fontSize: "0.72rem" }}>
+                            Twins, triplets, etc.
+                          </div>
+                          {isMultipleBirth && (
+                            <div className="mt-1" style={{ color: "#6f42c1", fontSize: "0.75rem", fontWeight: 700 }}>
+                              ✓ Selected
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     {isMultipleBirth && (
                       <div className="p-3 rounded border" style={{ background: "#f0f7ff" }}>
