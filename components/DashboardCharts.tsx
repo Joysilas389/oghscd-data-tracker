@@ -75,10 +75,56 @@ export default function DashboardCharts({
     trendData.map(d => d.count),
     [COLORS[0]], "Screenings");
 
-  useChart(resultRef, "bar",
-    resultCounts.map(d => d.label),
-    resultCounts.map(d => d.count),
-    COLORS, "Results");
+  // Horizontal bar chart for results breakdown
+  useEffect(() => {
+    if (!resultRef.current) return;
+    const ctx = resultRef.current.getContext("2d");
+    if (!ctx) return;
+    const chart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: resultCounts.map(d => d.label),
+        datasets: [{
+          label: "Results",
+          data: resultCounts.map(d => d.count),
+          backgroundColor: COLORS,
+          borderColor: COLORS,
+          borderWidth: 1,
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        animation: { duration: 1000, easing: "easeOutQuart" },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return ` ${context.parsed.x} screening${context.parsed.x !== 1 ? "s" : ""}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 },
+            grid: { color: "rgba(0,0,0,0.05)" },
+          },
+          y: {
+            ticks: {
+              font: { size: 11 },
+              color: "#444",
+            },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+    return () => chart.destroy();
+  }, []);
 
   useEffect(() => {
     if (!resultPieRef.current) return;
@@ -142,14 +188,14 @@ export default function DashboardCharts({
     [COLORS[0], COLORS[4], COLORS[1]], "Sex");
 
   const charts = [
-    { title: `📈 7-Day Trend`, ref: trendRef },
-    { title: `🔬 Results Breakdown`, ref: resultRef },
-    { title: `🥧 Results Distribution`, ref: resultPieRef },
-    { title: `🍩 Screening Type`, ref: typeRef },
-    { title: `✅ Review Status`, ref: statusRef },
-    { title: `📍 Top Localities`, ref: localityRef },
-    { title: `💊 Treatment Status`, ref: treatmentRef },
-    { title: `👥 Sex Distribution`, ref: sexRef },
+    { title: `📈 7-Day Trend`, ref: trendRef, tall: false },
+    { title: `🔬 Results Breakdown`, ref: resultRef, tall: true },
+    { title: `🥧 Results Distribution`, ref: resultPieRef, tall: false },
+    { title: `🍩 Screening Type`, ref: typeRef, tall: false },
+    { title: `✅ Review Status`, ref: statusRef, tall: false },
+    { title: `📍 Top Localities`, ref: localityRef, tall: false },
+    { title: `💊 Treatment Status`, ref: treatmentRef, tall: false },
+    { title: `👥 Sex Distribution`, ref: sexRef, tall: false },
   ];
 
   return (
@@ -159,13 +205,14 @@ export default function DashboardCharts({
       </div>
       <div className="row g-3">
         {charts.map(chart => (
-          <div key={chart.title} className="col-12 col-md-6">
+          <div key={chart.title} className={chart.tall ? "col-12" : "col-12 col-md-6"}>
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white small fw-semibold py-2">
                 {chart.title}
               </div>
               <div className="card-body p-3">
-                <canvas ref={chart.ref} />
+                <canvas ref={chart.ref}
+                  style={chart.tall ? { maxHeight: 320 } : {}} />
               </div>
             </div>
           </div>
