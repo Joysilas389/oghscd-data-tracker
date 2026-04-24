@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 interface BinItem {
   id: string;
+  patientId: string;
   patientName: string;
   patientCode: string;
   sex: string;
@@ -22,9 +23,11 @@ export default function BinActions({ items }: { items: BinItem[] }) {
   const [error, setError] = useState("");
   const [modal, setModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  function openModal(type: ModalType, id?: string) {
+  function openModal(type: ModalType, id?: string, patientId?: string) {
     setSelectedId(id || null);
+    setSelectedPatientId(patientId || null);
     setModal(type);
     setError("");
   }
@@ -58,7 +61,7 @@ export default function BinActions({ items }: { items: BinItem[] }) {
       const res = await fetch("/api/screenings/permanent-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(emptyAll ? { emptyAll: true } : { id: selectedId }),
+        body: JSON.stringify(emptyAll ? { emptyAll: true } : { id: selectedId, patientId: selectedPatientId }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed to delete"); }
@@ -135,7 +138,7 @@ export default function BinActions({ items }: { items: BinItem[] }) {
                   ♻️ Restore
                 </button>
                 <button className="btn btn-sm btn-outline-danger"
-                  onClick={() => openModal("delete", item.id)}>
+                  onClick={() => openModal("delete", item.id, item.patientId)}>
                   🗑️ Delete Permanently
                 </button>
               </div>

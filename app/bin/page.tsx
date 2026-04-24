@@ -9,7 +9,7 @@ export default async function BinPage() {
   if (!session.userId) redirect("/login");
   if (session.role === "SCREENER") redirect("/dashboard");
 
-  const deleted = await prisma.screening.findMany({
+  const deletedScreenings = await prisma.screening.findMany({
     where: { archivedAt: { not: null } },
     orderBy: { archivedAt: "desc" },
     include: {
@@ -25,17 +25,49 @@ export default async function BinPage() {
     },
   });
 
-  const items = deleted.map(s => ({
-    id: s.id,
-    patientName: `${s.patient.firstName} ${s.patient.lastName}`,
-    patientCode: s.patient.patientCode,
-    sex: s.patient.sex,
-    result: s.screeningResult,
-    screeningType: s.screeningType,
-    screeningDatetime: s.screeningDatetime.toISOString(),
-    deletedAt: s.archivedAt!.toISOString(),
-    enteredBy: s.enteredBy.fullName,
-  }));
+  // Also find archived patients with no screenings at all
+  const deletedPatientsOnly = await prisma.patient.findMany({
+    where: {
+      archivedAt: { not: null },
+      screenings: { none: {} },
+    },
+    orderBy: { archivedAt: "desc" },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      patientCode: true,
+      sex: true,
+      archivedAt: true,
+    },
+  });
+
+  const items = [
+    ...deletedScreenings.map(s => ({
+      id: s.id,
+      patientId: s.patientId,
+      patientName: `${s.patient.firstName} ${s.patient.lastName}`,
+      patientCode: s.patient.patientCode,
+      sex: s.patient.sex,
+      result: s.screeningResult,
+      screeningType: s.screeningType,
+      screeningDatetime: s.screeningDatetime.toISOString(),
+      deletedAt: s.archivedAt!.toISOString(),
+      enteredBy: s.enteredBy.fullName,
+    })),
+    ...deletedPatientsOnly.map(p => ({
+      id: p.id, // use patient id as the item id
+      patientId: p.id,
+      patientName: `${p.firstName} ${p.lastName}`,
+      patientCode: p.patientCode,
+      sex: p.sex,
+      result: "—",
+      screeningType: "—",
+      screeningDatetime: p.archivedAt!.toISOString(),
+      deletedAt: p.archivedAt!.toISOString(),
+      enteredBy: "—",
+    })),
+  ].sort((a, b) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime());
 
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>

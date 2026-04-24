@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   if (!session.userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (session.role === "SCREENER") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { id, emptyAll } = await req.json();
+  const { id, patientId, emptyAll } = await req.json();
 
   if (emptyAll) {
     // Permanently delete all archived screenings
@@ -31,6 +31,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Also delete any archived patients with no screenings at all
+    const archivedPatients = await prisma.patient.findMany({
+      where: { archivedAt: { not: null } },
+      select: { id: true },
+    });
+    for (const p of archivedPatients) {
+      await prisma.patient.delete({ where: { id: p.id } }).catch(() => {});
+    }
+
     await createAuditLog({
       actorId: session.userId,
       actionType: "EMPTY_BIN",
@@ -43,29 +52,53 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, deleted: archived.length });
   }
 
-  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  // Single delete — try screening first, fall back to patient
+  if (id) {
+    const screening = await prisma.screening.findUnique({
+      where: { id },
+      select: { id: true, patientId: true },
+    });
 
-  const screening = await prisma.screening.findUnique({
-    where: { id },
-    select: { id: true, patientId: true },
-  });
-  if (!screening) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (screening) {
+      await prisma.screening.delete({ where: { id } });
 
-  await prisma.screening.delete({ where: { id } });
+      // If patient has no screenings left, delete patient too
+      const remaining = await prisma.screening.count({
+        where: { patientId: screening.patientId },
+      });
+      if (remaining === 0) {
+        await prisma.patient.delete({ where: { id: screening.patientId } }).catch(() => {});
+      }
 
-  // If patient has no screenings left, delete patient too
-  const remaining = await prisma.screening.count({
-    where: { patientId: screening.patientId },
-  });
-  if (remaining === 0) {
-    await prisma.patient.delete({ where: { id: screening.patientId } }).catch(() => {});
+      await createAuditLog({
+        actorId: session.userId,
+        actionType: "PERMANENT_DELETE",
+        entityType: "Screening",
+        entityId: id,
+        ipAddress: req.headers.get("x-forwarded-for") ?? undefined,
+      });
+
+      return NextResponse.json({ ok: true });
+    }
   }
+
+  // Fall back — delete by patientId directly
+  // This handles patients with no screenings
+  const pid = patientId || id;
+  if (!pid) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  // Delete all screenings for this patient first
+  await prisma.screening.deleteMany({ where: { patientId: pid } }).catch(() => {});
+
+  // Delete the patient
+  const deleted = await prisma.patient.delete({ where: { id: pid } }).catch(() => null);
+  if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await createAuditLog({
     actorId: session.userId,
     actionType: "PERMANENT_DELETE",
-    entityType: "Screening",
-    entityId: id,
+    entityType: "Patient",
+    entityId: pid,
     ipAddress: req.headers.get("x-forwarded-for") ?? undefined,
   });
 
