@@ -50,7 +50,7 @@ export default async function PatientDetailPage({ params }: Props) {
   return (
     <div className="d-flex flex-column flex-md-row" style={{ minHeight: "100vh" }}>
       <Sidebar role={session.role} fullName={session.fullName} facilityName={session.facilityName} active="/patients" />
-      <div className="flex-grow-1 p-3 p-md-4" style={{ background: "#f8f9fa", minWidth: 0 }}>
+      <div className="flex-grow-1 p-3 p-md-4 pb-5 mb-5 pb-md-4 mb-md-0" style={{ background: "#f8f9fa", minWidth: 0 }}>
         <div className="mb-4 mt-5 mt-md-0 pt-3">
           <Link href="/patients" className="text-muted small text-decoration-none">← All Patients</Link>
           <div className="d-flex align-items-center gap-2 flex-wrap mt-1">
