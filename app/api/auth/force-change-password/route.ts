@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = Schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
   if (parsed.data.newPassword !== parsed.data.confirmPassword) {
