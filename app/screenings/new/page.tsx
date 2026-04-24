@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const LOCALITIES = [
-  "Oda","Akim Oda","Ayirebi","Akwatia","Abirem",
+  "Akim-Oda","Ayirebi","Akwatia","Abirem",
   "Akim Swedru","Akim Asafo","Kukurantumi","Koforidua","Kade","Other"
 ];
 const RESULTS = [
@@ -47,7 +47,7 @@ export default function NewScreeningPage() {
   const [patient, setPatient] = useState({
     firstName: "", lastName: "", sex: "MALE", phoneNumber: "",
     dateOfBirth: "", ethnicity: "", nhisStatus: "NONE",
-    address: "", district: "Birim Central Municipal", locality: "Oda",
+    address: "", district: "Birim Central Municipal", locality: "Akim-Oda",
   });
 
   const [screening, setScreening] = useState({
