@@ -396,6 +396,118 @@ export default function NewScreeningPage() {
                     <input className="form-control" value={patient.address}
                       onChange={sp("address")} />
                   </div>
+
+                  {/* Multiple Birth Section */}
+                  <div className="col-12">
+                    <div className="form-check form-switch mb-2">
+                      <input className="form-check-input" type="checkbox" id="isMultipleBirth"
+                        checked={isMultipleBirth}
+                        onChange={e => {
+                          setIsMultipleBirth(e.target.checked);
+                          if (!e.target.checked) {
+                            setSelectedSiblings([]);
+                            setSiblingSearch("");
+                            setSiblingResults([]);
+                            setBirthOrder(null);
+                          }
+                        }} />
+                      <label className="form-check-label fw-semibold small" htmlFor="isMultipleBirth">
+                        👥 This patient is from a multiple birth (twin, triplet, etc.)
+                      </label>
+                    </div>
+                    {isMultipleBirth && (
+                      <div className="p-3 rounded border" style={{ background: "#f0f7ff" }}>
+                        {/* Birth type + order */}
+                        <div className="row g-2 mb-3">
+                          <div className="col-7">
+                            <label className="form-label small fw-semibold">Birth Type *</label>
+                            <select className="form-select form-select-sm"
+                              value={multipleBirthType}
+                              onChange={e => setMultipleBirthType(e.target.value)}>
+                              <option value="Twin">Twin</option>
+                              <option value="Triplet">Triplet</option>
+                              <option value="Quadruplet">Quadruplet</option>
+                              <option value="Quintuplet">Quintuplet</option>
+                              <option value="Other Multiple Birth">Other Multiple Birth</option>
+                            </select>
+                          </div>
+                          <div className="col-5">
+                            <label className="form-label small fw-semibold">Birth Order *</label>
+                            <select className="form-select form-select-sm"
+                              value={birthOrder ?? ""}
+                              onChange={e => setBirthOrder(e.target.value ? parseInt(e.target.value) : null)}>
+                              <option value="">Select...</option>
+                              <option value="1">1st</option>
+                              <option value="2">2nd</option>
+                              <option value="3">3rd</option>
+                              <option value="4">4th</option>
+                              <option value="5">5th</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Selected siblings */}
+                        {selectedSiblings.length > 0 && (
+                          <div className="mb-2">
+                            <div className="small fw-semibold mb-1">
+                              Linked siblings ({selectedSiblings.length}):
+                            </div>
+                            {selectedSiblings.map(s => (
+                              <div key={s.id}
+                                className="d-flex align-items-center justify-content-between p-2 rounded mb-1"
+                                style={{ background: "#d6eaf8", border: "1px solid #1a5276" }}>
+                                <div className="small">
+                                  <span className="fw-semibold">{s.firstName} {s.lastName}</span>
+                                  <span className="text-muted font-monospace ms-2"
+                                    style={{ fontSize: "0.7rem" }}>{s.patientCode}</span>
+                                </div>
+                                <button type="button"
+                                  onClick={() => setSelectedSiblings(prev => prev.filter(x => x.id !== s.id))}
+                                  style={{ background: "none", border: "none", color: "#dc3545", cursor: "pointer", fontSize: "0.8rem" }}>
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Sibling search */}
+                        <div className="position-relative">
+                          <label className="form-label small fw-semibold">
+                            Link Sibling(s) <span className="text-muted fw-normal">(optional — search existing patients)</span>
+                          </label>
+                          <input className="form-control form-control-sm"
+                            placeholder="Search by name or patient ID..."
+                            value={siblingSearch}
+                            onChange={e => searchSibling(e.target.value)} />
+                          {siblingResults.length > 0 && (
+                            <div className="border rounded shadow-sm position-absolute w-100"
+                              style={{ background: "#fff", zIndex: 100, top: "100%", maxHeight: 200, overflowY: "auto" }}>
+                              {siblingResults.map(p => (
+                                <div key={p.id} className="p-2 small"
+                                  style={{ cursor: "pointer", borderBottom: "1px solid #f0f0f0" }}
+                                  onMouseEnter={e => (e.currentTarget.style.background = "#f0f7ff")}
+                                  onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                                  onClick={() => {
+                                    setSelectedSiblings(prev => [...prev, p]);
+                                    setSiblingResults([]);
+                                    setSiblingSearch("");
+                                  }}>
+                                  <div className="fw-semibold">{p.firstName} {p.lastName}</div>
+                                  <div className="text-muted font-monospace" style={{ fontSize: "0.7rem" }}>
+                                    {p.patientCode} · {p.sex} · {new Date(p.dateOfBirth).toLocaleDateString("en-GB")}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="small text-muted mt-2">
+                          💡 If sibling is not yet registered, leave blank and link later from the patient profile.
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="d-flex justify-content-end mt-4">
                   <button type="submit" className="btn text-white"
