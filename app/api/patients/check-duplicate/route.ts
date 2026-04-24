@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ duplicate: false });
   }
 
-  const matchHash = generateMatchHash(firstName, lastName, dateOfBirth, phoneNumber || "");
+  const matchHash = generateMatchHash(firstName, lastName, dateOfBirth, "");
 
   const existing = await prisma.patient.findFirst({
     where: { matchHash, archivedAt: null },

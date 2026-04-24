@@ -19,13 +19,12 @@ export function generateMatchHash(
   firstName: string,
   lastName: string,
   dob: string,
-  phone: string
+  phone: string = ""
 ): string {
   const normalized = [
     firstName.toLowerCase().trim().replace(/\s+/g, ""),
     lastName.toLowerCase().trim().replace(/\s+/g, ""),
     dob,
-    phone.replace(/\D/g, "").slice(-9),
   ].join("|");
   return Buffer.from(normalized).toString("base64");
 }
