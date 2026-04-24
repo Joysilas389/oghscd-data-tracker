@@ -121,9 +121,16 @@ export default function ReviewQueue({ screenings }: { screenings: Screening[] })
                     <span className="font-monospace small text-muted">
                       {s.patient.patientCode}
                     </span>
-                    <h6 className="fw-semibold mb-0">
-                      {s.patient.firstName} {s.patient.lastName}
-                    </h6>
+                    <div className="d-flex align-items-center gap-2 flex-wrap">
+                      <h6 className="fw-semibold mb-0">
+                        {s.patient.firstName} {s.patient.lastName}
+                      </h6>
+                      <MultipleBirthBadge
+                        isMultipleBirth={s.patient.isMultipleBirth}
+                        multipleBirthType={s.patient.multipleBirthType}
+                        birthOrder={s.patient.birthOrder}
+                      />
+                    </div>
                     <span className="text-muted small">
                       {s.patient.sex} · {new Date(s.screeningDatetime).toLocaleDateString("en-GB")}
                     </span>
