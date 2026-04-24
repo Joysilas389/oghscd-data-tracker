@@ -47,6 +47,12 @@ export default function NewScreeningPage() {
   const [existingPatientId, setExistingPatientId] = useState<string | null>(null);
   const [newPatientReason, setNewPatientReason] = useState("");
   const [newPatientReasonError, setNewPatientReasonError] = useState("");
+  const [isMultipleBirth, setIsMultipleBirth] = useState(false);
+  const [multipleBirthType, setMultipleBirthType] = useState("Twin");
+  const [siblingSearch, setSiblingSearch] = useState("");
+  const [siblingResults, setSiblingResults] = useState<{id:string;patientCode:string;firstName:string;lastName:string;dateOfBirth:string;sex:string}[]>([]);
+  const [selectedSiblings, setSelectedSiblings] = useState<{id:string;patientCode:string;firstName:string;lastName:string}[]>([]);
+  const [searchingSibling, setSearchingSibling] = useState(false);
 
   const [patient, setPatient] = useState({
     firstName: "", lastName: "", sex: "MALE", phoneNumber: "",
@@ -74,6 +80,22 @@ export default function NewScreeningPage() {
     setPatient(p => ({ ...p, [f]: e.target.value }));
   const ss = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setScreening(p => ({ ...p, [f]: e.target.value }));
+
+  async function searchSibling(q: string) {
+    setSiblingSearch(q);
+    if (q.length < 2) { setSiblingResults([]); return; }
+    setSearchingSibling(true);
+    try {
+      const res = await fetch(`/api/patients/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      // Exclude already selected siblings
+      const filtered = (data.patients || []).filter(
+        (p: any) => !selectedSiblings.find(s => s.id === p.id)
+      );
+      setSiblingResults(filtered);
+    } catch {}
+    setSearchingSibling(false);
+  }
 
   async function handleStep1(e: React.FormEvent) {
     e.preventDefault();
@@ -128,7 +150,12 @@ export default function NewScreeningPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          patient: existingPatientId ? null : patient,
+          patient: existingPatientId ? null : {
+            ...patient,
+            isMultipleBirth,
+            multipleBirthType: isMultipleBirth ? multipleBirthType : null,
+            siblingIds: selectedSiblings.map(s => s.id),
+          },
           existingPatientId,
           screening,
         }),

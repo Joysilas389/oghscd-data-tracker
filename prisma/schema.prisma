@@ -57,8 +57,12 @@ model Patient {
   locality    String?
   latitude    Float?
   longitude   Float?
-  matchHash   String?
-  createdById String
+  matchHash          String?
+  isMultipleBirth    Boolean   @default(false)
+  multipleBirthType  String?
+  createdById        String
+  siblings           PatientSibling[] @relation("PatientSiblings")
+  siblingOf          PatientSibling[] @relation("SiblingOf")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   archivedAt  DateTime?
@@ -132,6 +136,17 @@ model LocalityReference {
   longitude Float
 
   @@index([district])
+}
+
+model PatientSibling {
+  patientId  String
+  siblingId  String
+  patient    Patient @relation("PatientSiblings", fields: [patientId], references: [id], onDelete: Cascade)
+  sibling    Patient @relation("SiblingOf", fields: [siblingId], references: [id], onDelete: Cascade)
+
+  @@id([patientId, siblingId])
+  @@index([patientId])
+  @@index([siblingId])
 }
 
 enum Role {

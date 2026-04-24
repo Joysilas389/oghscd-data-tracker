@@ -15,6 +15,8 @@ const UpdatePatientSchema = z.object({
   address: z.string().optional().default(""),
   district: z.string().optional().default(""),
   locality: z.string().optional().default(""),
+  isMultipleBirth: z.boolean().optional().default(false),
+  multipleBirthType: z.string().optional().nullable(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -48,6 +50,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       address: parsed.data.address,
       district: parsed.data.district,
       locality: parsed.data.locality,
+      isMultipleBirth: parsed.data.isMultipleBirth ?? false,
+      multipleBirthType: parsed.data.multipleBirthType || null,
     },
   });
 
