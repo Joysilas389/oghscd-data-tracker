@@ -9,7 +9,7 @@ const UpdatePatientSchema = z.object({
   lastName: z.string().min(1),
   sex: z.enum(["MALE", "FEMALE"]),
   dateOfBirth: z.string().min(1),
-  phoneNumber: z.string().default(""),
+  phoneNumber: z.string().min(10, "Phone number is required and must be at least 10 digits"),
   ethnicity: z.string().optional().default(""),
   nhisStatus: z.enum(["NONE", "ACTIVE", "EXPIRED"]).default("NONE"),
   address: z.string().optional().default(""),

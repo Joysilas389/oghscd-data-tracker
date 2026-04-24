@@ -197,9 +197,11 @@ export default function EditScreeningPage() {
                   onChange={setP("dateOfBirth")} required />
               </div>
               <div className="col-md-6">
-                <label className="form-label small fw-semibold">Phone Number</label>
+                <label className="form-label small fw-semibold">Phone Number *</label>
                 <input className="form-control" value={patient.phoneNumber}
-                  onChange={setP("phoneNumber")} />
+                  onChange={setP("phoneNumber")}
+                  placeholder="e.g. 0244123456"
+                  required />
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">NHIS Status</label>

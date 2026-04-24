@@ -10,7 +10,7 @@ const Schema = z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
     sex: z.enum(["MALE", "FEMALE"]),
-    phoneNumber: z.string().optional().default(""),
+    phoneNumber: z.string().min(10, "Phone number is required and must be at least 10 digits"),
     dateOfBirth: z.string(),
     ethnicity: z.string().optional().default(""),
     nhisStatus: z.enum(["ACTIVE", "EXPIRED", "NONE"]).default("NONE"),

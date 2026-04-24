@@ -366,9 +366,11 @@ export default function NewScreeningPage() {
                       onChange={sp("dateOfBirth")} required />
                   </div>
                   <div className="col-md-4">
-                    <label className="form-label small fw-semibold">Phone Number</label>
+                    <label className="form-label small fw-semibold">Phone Number *</label>
                     <input type="tel" className="form-control"
-                      value={patient.phoneNumber} onChange={sp("phoneNumber")} />
+                      value={patient.phoneNumber} onChange={sp("phoneNumber")}
+                      placeholder="e.g. 0244123456"
+                      required />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold">Ethnicity</label>
