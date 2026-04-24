@@ -52,8 +52,15 @@ export async function POST(req: NextRequest) {
       patientId = existingPatientId;
     } else {
       if (!pd) return NextResponse.json({ error: "Patient data required" }, { status: 400 });
-      const count = await prisma.patient.count();
-      const patientCode = generatePatientCode(count + 1);
+      // Always use highest ever ID + 1 so deleted IDs are never reused
+      const maxPatient = await prisma.patient.findFirst({
+        orderBy: { patientCode: "desc" },
+        select: { patientCode: true },
+      });
+      const lastNumber = maxPatient
+        ? parseInt(maxPatient.patientCode.split("-")[3]) || 0
+        : 0;
+      const patientCode = generatePatientCode(lastNumber + 1);
       const matchHash = generateMatchHash(
         pd.firstName, pd.lastName, pd.dateOfBirth, pd.phoneNumber || ""
       );
