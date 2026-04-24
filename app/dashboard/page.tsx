@@ -48,6 +48,28 @@ export default async function DashboardPage({
       prisma.patient.count({ where: { archivedAt: null } }),
     ]);
 
+  // Multiple births stats
+  const multipleBirthStats = await prisma.patient.groupBy({
+    by: ["multipleBirthType"],
+    where: { archivedAt: null, isMultipleBirth: true },
+    _count: { id: true },
+  });
+
+  // Build multiple births summary
+  const mbSummary: Record<string, { sets: number; individuals: number }> = {};
+  const membersPerType: Record<string, number> = {
+    "Twin": 2, "Triplet": 3, "Quadruplet": 4, "Quintuplet": 5,
+  };
+  for (const row of multipleBirthStats) {
+    const type = row.multipleBirthType || "Other Multiple Birth";
+    const membersCount = membersPerType[type] || 2;
+    const individuals = row._count.id;
+    const sets = Math.round(individuals / membersCount);
+    mbSummary[type] = { sets, individuals };
+  }
+  const totalMultipleSets = Object.values(mbSummary).reduce((s, v) => s + v.sets, 0);
+  const totalMultipleIndividuals = Object.values(mbSummary).reduce((s, v) => s + v.individuals, 0);
+
   const myFlagged = session.role === "SCREENER"
     ? await prisma.screening.count({
         where: { archivedAt: null, reviewStatus: "FLAGGED", enteredById: session.userId }
@@ -164,6 +186,12 @@ export default async function DashboardPage({
     { label: "Newborn", value: newborn, color: "#0dcaf0", icon: "👶" },
     { label: "On Treatment", value: treatment, color: "#198754", icon: "💊" },
     { label: "Total Patients", value: patients, color: "#fd7e14", icon: "👥" },
+    { label: "Multiple Births", value: totalMultipleSets, color: "#6f42c1", icon: "👥",
+      subtitle: totalMultipleIndividuals > 0
+        ? Object.entries(mbSummary).map(([type, v]) =>
+            `${v.sets} ${type} set${v.sets !== 1 ? "s" : ""} (${v.individuals} ind.)`
+          ).join(" · ")
+        : "No multiple births recorded" },
   ];
 
   return (

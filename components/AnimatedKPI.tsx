@@ -8,8 +8,9 @@ interface KPI {
   color: string;
   icon: string;
   link?: string;
-  max?: number; // for progress bar — pass monthly target or total
-  alert?: boolean; // pulse if true
+  max?: number;
+  alert?: boolean;
+  subtitle?: string;
 }
 
 // Eased count-up
