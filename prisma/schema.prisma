@@ -20,7 +20,8 @@ model User {
   updatedAt    DateTime  @updatedAt
   lastLoginAt  DateTime?
   failedLogins Int       @default(0)
-  lockedUntil  DateTime?
+  lockedUntil          DateTime?
+  mustChangePassword    Boolean   @default(false)
 
   screenings         Screening[]
   auditLogs          AuditLog[]  @relation("AuditActor")

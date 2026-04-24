@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const hash = await hashPassword(parsed.data.newPassword);
   await prisma.user.update({
     where: { id: parsed.data.userId },
-    data: { passwordHash: hash, failedLogins: 0, lockedUntil: null },
+    data: { passwordHash: hash, failedLogins: 0, lockedUntil: null, mustChangePassword: true },
   });
 
   await createAuditLog({

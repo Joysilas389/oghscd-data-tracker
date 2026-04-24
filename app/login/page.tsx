@@ -23,6 +23,7 @@ function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Login failed"); }
+      else if (data.mustChangePassword) { router.push("/force-change-password"); }
       else { router.push("/dashboard"); }
     } catch { setError("Network error. Please try again."); }
     finally { setLoading(false); }
