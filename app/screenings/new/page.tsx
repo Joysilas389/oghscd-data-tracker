@@ -41,8 +41,12 @@ export default function NewScreeningPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [duplicate, setDuplicate] = useState<DuplicatePatient | null>(null);
+  const [duplicateConfidence, setDuplicateConfidence] = useState(0);
+  const [duplicateReason, setDuplicateReason] = useState("");
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [existingPatientId, setExistingPatientId] = useState<string | null>(null);
+  const [newPatientReason, setNewPatientReason] = useState("");
+  const [newPatientReasonError, setNewPatientReasonError] = useState("");
 
   const [patient, setPatient] = useState({
     firstName: "", lastName: "", sex: "MALE", phoneNumber: "",
@@ -87,6 +91,8 @@ export default function NewScreeningPage() {
       const data = await res.json();
       if (data.duplicate) {
         setDuplicate(data.patient);
+        setDuplicateConfidence(data.confidence || 100);
+        setDuplicateReason(data.reason || "Similar patient details detected");
         setShowDuplicateModal(true);
         return;
       }
@@ -103,8 +109,14 @@ export default function NewScreeningPage() {
   }
 
   function handleNewPatient() {
+    if (!newPatientReason.trim()) {
+      setNewPatientReasonError("Please provide a reason why this is a different patient.");
+      return;
+    }
+    setNewPatientReasonError("");
     setShowDuplicateModal(false);
     setExistingPatientId(null);
+    setNewPatientReason("");
     setStep(2);
   }
 
@@ -151,21 +163,73 @@ export default function NewScreeningPage() {
         {showDuplicateModal && duplicate && (
           <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
             style={{ background: "rgba(0,0,0,0.6)", zIndex: 9999, padding: "1rem" }}>
-            <div className="card border-0 shadow-lg" style={{ maxWidth: 500, width: "100%" }}>
-              <div className="card-header fw-semibold text-dark" style={{ background: "#ffc107" }}>
-                ⚠️ Possible Existing Patient Found
+            <div className="card border-0 shadow-lg overflow-auto"
+              style={{ maxWidth: 500, width: "100%", maxHeight: "90vh" }}>
+
+              {/* Header — colour coded by confidence */}
+              <div className="fw-semibold text-dark px-4 py-3 d-flex align-items-center justify-content-between"
+                style={{
+                  background: duplicateConfidence >= 90 ? "#f8d7da" :
+                              duplicateConfidence >= 70 ? "#ffc107" : "#fff3cd",
+                }}>
+                <span>
+                  {duplicateConfidence >= 90 ? "🚨" :
+                   duplicateConfidence >= 70 ? "⚠️" : "ℹ️"} Possible Existing Patient
+                </span>
+                {/* Confidence badge */}
+                <span className="badge rounded-pill"
+                  style={{
+                    background: duplicateConfidence >= 90 ? "#dc3545" :
+                                duplicateConfidence >= 70 ? "#856404" : "#664d03",
+                    color: "#fff", fontSize: "0.75rem",
+                  }}>
+                  {duplicateConfidence}% match
+                </span>
               </div>
+
               <div className="card-body p-4">
-                <div className="alert alert-warning small mb-3">
-                  A patient with similar details already exists. Please confirm before proceeding.
+                {/* Reason */}
+                <div className="alert small mb-3 py-2"
+                  style={{
+                    background: duplicateConfidence >= 90 ? "#f8d7da" :
+                                duplicateConfidence >= 70 ? "#fff3cd" : "#d1ecf1",
+                    border: "none",
+                    color: duplicateConfidence >= 90 ? "#842029" :
+                           duplicateConfidence >= 70 ? "#664d03" : "#0c5460",
+                  }}>
+                  <strong>Why flagged:</strong> {duplicateReason}
                 </div>
-                <div className="mb-3 p-3 bg-light rounded small">
+
+                {/* Confidence bar */}
+                <div className="mb-3">
+                  <div className="d-flex justify-content-between small text-muted mb-1">
+                    <span>Similarity confidence</span>
+                    <span>{duplicateConfidence}%</span>
+                  </div>
+                  <div style={{ height: 6, background: "#e9ecef", borderRadius: 4 }}>
+                    <div style={{
+                      height: "100%", borderRadius: 4,
+                      width: `${duplicateConfidence}%`,
+                      background: duplicateConfidence >= 90 ? "#dc3545" :
+                                  duplicateConfidence >= 70 ? "#ffc107" : "#0dcaf0",
+                      transition: "width 0.6s ease",
+                    }} />
+                  </div>
+                </div>
+
+                {/* Existing patient details */}
+                <div className="mb-3 p-3 rounded small"
+                  style={{ background: "#f8f9fa", border: "1px solid #dee2e6" }}>
+                  <div className="fw-semibold mb-2" style={{ color: "#1a5276" }}>
+                    Existing Record Found:
+                  </div>
                   <div><strong>Patient ID:</strong> {duplicate.patientCode}</div>
                   <div><strong>Name:</strong> {duplicate.firstName} {duplicate.lastName}</div>
                   <div><strong>Sex:</strong> {duplicate.sex}</div>
                   <div><strong>DOB:</strong> {new Date(duplicate.dateOfBirth).toLocaleDateString("en-GB")}</div>
                 </div>
 
+                {/* Previous screenings */}
                 {duplicate.screenings.length > 0 && (
                   <div className="mb-3">
                     <div className="small fw-semibold mb-2">
@@ -193,21 +257,46 @@ export default function NewScreeningPage() {
                   </div>
                 )}
 
-                <div className="d-grid gap-2">
-                  <button onClick={handleUseExisting}
-                    className="btn text-white fw-semibold"
-                    style={{ background: "#1a5276" }}>
-                    ✅ Same patient — add new screening visit
-                  </button>
+                {/* Primary action */}
+                <button onClick={handleUseExisting}
+                  className="btn text-white fw-semibold w-100 mb-3"
+                  style={{ background: "#1a5276" }}>
+                  ✅ Same patient — add new screening visit
+                </button>
+
+                {/* Register as new — requires reason */}
+                <div className="border rounded p-3"
+                  style={{ background: "#fff8f0" }}>
+                  <div className="small fw-semibold mb-2 text-danger">
+                    ➕ Register as a different patient
+                  </div>
+                  <div className="small text-muted mb-2">
+                    If this is genuinely a different person, you must provide a reason.
+                    This will be logged in the audit trail.
+                  </div>
+                  <textarea
+                    className="form-control form-control-sm mb-2"
+                    rows={2}
+                    placeholder="e.g. Different patient with same name, confirmed by guardian ID..."
+                    value={newPatientReason}
+                    onChange={e => {
+                      setNewPatientReason(e.target.value);
+                      setNewPatientReasonError("");
+                    }}
+                  />
+                  {newPatientReasonError && (
+                    <div className="text-danger small mb-2">{newPatientReasonError}</div>
+                  )}
                   <button onClick={handleNewPatient}
-                    className="btn btn-outline-secondary">
-                    ➕ Different patient — create new record
-                  </button>
-                  <button onClick={() => setShowDuplicateModal(false)}
-                    className="btn btn-link text-muted small py-1">
-                    Cancel
+                    className="btn btn-sm btn-outline-danger w-100">
+                    Confirm — Register as New Patient
                   </button>
                 </div>
+
+                <button onClick={() => { setShowDuplicateModal(false); setNewPatientReason(""); setNewPatientReasonError(""); }}
+                  className="btn btn-link text-muted small py-1 w-100 mt-2">
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
