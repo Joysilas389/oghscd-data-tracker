@@ -17,6 +17,7 @@ const UpdatePatientSchema = z.object({
   locality: z.string().optional().default(""),
   isMultipleBirth: z.boolean().optional().default(false),
   multipleBirthType: z.string().optional().nullable(),
+  birthOrder: z.number().optional().nullable(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -52,6 +53,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       locality: parsed.data.locality,
       isMultipleBirth: parsed.data.isMultipleBirth ?? false,
       multipleBirthType: parsed.data.multipleBirthType || null,
+      birthOrder: parsed.data.birthOrder ?? null,
     },
   });
 

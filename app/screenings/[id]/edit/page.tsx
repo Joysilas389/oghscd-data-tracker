@@ -36,6 +36,9 @@ export default function EditScreeningPage() {
     address: "",
     district: "",
     locality: "",
+    isMultipleBirth: false,
+    multipleBirthType: null as string | null,
+    birthOrder: null as number | null,
   });
 
   const [screening, setScreening] = useState({
@@ -73,6 +76,9 @@ export default function EditScreeningPage() {
             address: p.address ?? "",
             district: p.district ?? "",
             locality: p.locality ?? "",
+            isMultipleBirth: p.isMultipleBirth ?? false,
+            multipleBirthType: p.multipleBirthType ?? null,
+            birthOrder: p.birthOrder ?? null,
           });
           setScreening({
             screeningDatetime: s.screeningDatetime
