@@ -24,6 +24,7 @@ export default function EditScreeningPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [patientId, setPatientId] = useState("");
+  const [role, setRole] = useState("");
 
   const [patient, setPatient] = useState({
     firstName: "",
@@ -56,6 +57,13 @@ export default function EditScreeningPage() {
     referralNotes: "",
     facilityName: "",
   });
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.json())
+      .then(data => { if (data.user) setRole(data.user.role); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch(`/api/screenings/${id}`)
@@ -241,6 +249,108 @@ export default function EditScreeningPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Section 1b: Multiple Birth (Manager/Admin only) ── */}
+        {(role === "MANAGER" || role === "ADMIN") && (
+          <div className="card border-0 shadow-sm mb-4"
+            style={{ borderLeft: "4px solid #6f42c1" }}>
+            <div className="card-header fw-semibold py-2"
+              style={{ background: "#f0e6ff", fontSize: "0.9rem", color: "#6f42c1" }}>
+              👥 Multiple Birth Status
+              <span className="ms-2 badge" style={{ background: "#6f42c1", fontSize: "0.65rem" }}>
+                Manager / Admin only
+              </span>
+            </div>
+            <div className="card-body p-4">
+              {/* Selection cards */}
+              <div className="row g-2 mb-3">
+                <div className="col-6">
+                  <div onClick={() => setPatient(p => ({
+                      ...p, isMultipleBirth: false,
+                      multipleBirthType: null, birthOrder: null
+                    }))}
+                    style={{
+                      cursor: "pointer",
+                      border: !patient.isMultipleBirth ? "3px solid #1a5276" : "2px solid #dee2e6",
+                      borderRadius: 12, padding: "14px 12px", textAlign: "center",
+                      background: !patient.isMultipleBirth ? "#d6eaf8" : "#fff",
+                      transition: "all 0.2s",
+                    }}>
+                    <div style={{ fontSize: "1.8rem" }}>👤</div>
+                    <div className="fw-bold mt-1" style={{
+                      fontSize: "0.85rem",
+                      color: !patient.isMultipleBirth ? "#1a5276" : "#555",
+                    }}>Single Baby</div>
+                    {!patient.isMultipleBirth && (
+                      <div style={{ color: "#1a5276", fontSize: "0.7rem", fontWeight: 700 }}>✓ Selected</div>
+                    )}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <div onClick={() => setPatient(p => ({
+                      ...p, isMultipleBirth: true,
+                      multipleBirthType: p.multipleBirthType || "Twin",
+                    }))}
+                    style={{
+                      cursor: "pointer",
+                      border: patient.isMultipleBirth ? "3px solid #6f42c1" : "2px solid #dee2e6",
+                      borderRadius: 12, padding: "14px 12px", textAlign: "center",
+                      background: patient.isMultipleBirth ? "#f0e6ff" : "#fff",
+                      transition: "all 0.2s",
+                    }}>
+                    <div style={{ fontSize: "1.8rem" }}>👥</div>
+                    <div className="fw-bold mt-1" style={{
+                      fontSize: "0.85rem",
+                      color: patient.isMultipleBirth ? "#6f42c1" : "#555",
+                    }}>Multiple Birth</div>
+                    {patient.isMultipleBirth && (
+                      <div style={{ color: "#6f42c1", fontSize: "0.7rem", fontWeight: 700 }}>✓ Selected</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Birth type and order — only when multiple birth selected */}
+              {patient.isMultipleBirth && (
+                <div className="row g-2">
+                  <div className="col-7">
+                    <label className="form-label small fw-semibold">Birth Type</label>
+                    <select className="form-select form-select-sm"
+                      value={patient.multipleBirthType || "Twin"}
+                      onChange={e => setPatient(p => ({ ...p, multipleBirthType: e.target.value }))}>
+                      <option value="Twin">Twin</option>
+                      <option value="Triplet">Triplet</option>
+                      <option value="Quadruplet">Quadruplet</option>
+                      <option value="Quintuplet">Quintuplet</option>
+                      <option value="Other Multiple Birth">Other Multiple Birth</option>
+                    </select>
+                  </div>
+                  <div className="col-5">
+                    <label className="form-label small fw-semibold">Birth Order</label>
+                    <select className="form-select form-select-sm"
+                      value={patient.birthOrder ?? ""}
+                      onChange={e => setPatient(p => ({
+                        ...p, birthOrder: e.target.value ? parseInt(e.target.value) : null
+                      }))}>
+                      <option value="">Select...</option>
+                      <option value="1">1st</option>
+                      <option value="2">2nd</option>
+                      <option value="3">3rd</option>
+                      <option value="4">4th</option>
+                      <option value="5">5th</option>
+                    </select>
+                  </div>
+                  <div className="col-12">
+                    <div className="small text-muted mt-1">
+                      💡 Current: {patient.multipleBirthType || "Twin"} —{" "}
+                      {patient.birthOrder ? `${patient.birthOrder === 1 ? "1st" : patient.birthOrder === 2 ? "2nd" : patient.birthOrder === 3 ? "3rd" : `${patient.birthOrder}th`}` : "No order set"}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── Section 2: Screening Data ── */}
         <div className="card border-0 shadow-sm mb-4">
