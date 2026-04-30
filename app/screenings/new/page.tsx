@@ -388,10 +388,26 @@ export default function NewScreeningPage() {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold">Locality</label>
-                    <select className="form-select" value={patient.locality}
-                      onChange={sp("locality")}>
+                    <select className="form-select"
+                      value={LOCALITIES.slice(0,-1).includes(patient.locality) ? patient.locality : "Other"}
+                      onChange={e => {
+                        if (e.target.value === "Other") {
+                          setPatient(p => ({ ...p, locality: "" }));
+                        } else {
+                          setPatient(p => ({ ...p, locality: e.target.value }));
+                        }
+                      }}>
                       {LOCALITIES.map(l => <option key={l} value={l}>{l}</option>)}
                     </select>
+                    {!LOCALITIES.slice(0,-1).includes(patient.locality) && (
+                      <input
+                        className="form-control mt-2"
+                        placeholder="Type locality name e.g. Afosu, Ayirebi West..."
+                        value={patient.locality}
+                        onChange={e => setPatient(p => ({ ...p, locality: e.target.value }))}
+                        required
+                      />
+                    )}
                   </div>
                   <div className="col-md-6">
                     <label className="form-label small fw-semibold">Address</label>
