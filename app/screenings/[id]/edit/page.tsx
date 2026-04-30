@@ -423,6 +423,7 @@ export default function EditScreeningPage() {
                       <option value="NONE">Select action...</option>
                       <option value="DONE">Confirmatory done — result ready</option>
                       <option value="REFERRED">Referred — result pending</option>
+                      <option value="SCHEDULED">Scheduled at OGH — result pending</option>
                     </select>
                   </div>
                   {screening.confirmatoryAction === "DONE" && (

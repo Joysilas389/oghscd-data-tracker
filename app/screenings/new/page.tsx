@@ -650,6 +650,7 @@ export default function NewScreeningPage() {
                           <option value="NONE">Select action...</option>
                           <option value="DONE">Confirmatory done — result ready</option>
                           <option value="REFERRED">Referred for confirmatory testing — result pending</option>
+                          <option value="SCHEDULED">Scheduled for confirmatory testing at OGH — result pending</option>
                         </select>
                         <div className="form-text small text-muted">
                           Note: Only Hemotype SC / Hemotype C available at OGH.

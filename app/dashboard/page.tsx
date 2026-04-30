@@ -60,6 +60,8 @@ export default async function DashboardPage({
         OR: [
           { confirmatoryAction: "REFERRED", confirmedResult: null },
           { confirmatoryAction: "REFERRED", confirmedResult: "" },
+          { confirmatoryAction: "SCHEDULED", confirmedResult: null },
+          { confirmatoryAction: "SCHEDULED", confirmedResult: "" },
           { confirmatoryAction: "DONE", confirmedResult: null },
           { confirmatoryAction: "DONE", confirmedResult: "" },
           { confirmatoryAction: "NONE" },

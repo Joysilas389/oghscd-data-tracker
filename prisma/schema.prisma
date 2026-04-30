@@ -176,6 +176,7 @@ enum ScreeningType {
 enum ConfirmatoryAction {
   DONE
   REFERRED
+  SCHEDULED
   NONE
 }
 
