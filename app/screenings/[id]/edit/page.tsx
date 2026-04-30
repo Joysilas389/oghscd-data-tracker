@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
+const LOCALITIES = [
+  "Akim-Oda","Ayirebi","Akwatia","Abirem",
+  "Akim Swedru","Akim Asafo","Kukurantumi","Koforidua","Kade","Other"
+];
+
 const RESULTS = [
   "Normal (AA)",
   "Sickle Cell Trait (AS)",
@@ -233,8 +238,25 @@ export default function EditScreeningPage() {
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Locality</label>
-                <input className="form-control" value={patient.locality}
-                  onChange={setP("locality")} />
+                <select className="form-select"
+                  value={LOCALITIES.slice(0,-1).includes(patient.locality) ? patient.locality : "Other"}
+                  onChange={e => {
+                    if (e.target.value === "Other") {
+                      setPatient(p => ({ ...p, locality: "" }));
+                    } else {
+                      setPatient(p => ({ ...p, locality: e.target.value }));
+                    }
+                  }}>
+                  {LOCALITIES.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+                {!LOCALITIES.slice(0,-1).includes(patient.locality) && (
+                  <input
+                    className="form-control mt-2"
+                    placeholder="Type locality name e.g. Afosu, Ayirebi West..."
+                    value={patient.locality}
+                    onChange={e => setPatient(p => ({ ...p, locality: e.target.value }))}
+                  />
+                )}
               </div>
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">District</label>
