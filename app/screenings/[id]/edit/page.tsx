@@ -130,6 +130,16 @@ export default function EditScreeningPage() {
     setError("");
     setSuccess("");
 
+    // Validate confirmatory result when DONE is selected
+    const needsConfirmation = ["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"];
+    if (needsConfirmation.includes(screening.screeningResult) &&
+        screening.confirmatoryAction === "DONE" &&
+        !screening.confirmedResult.trim()) {
+      setError("Please enter the confirmed result — it is required when confirmatory action is Done.");
+      setSaving(false);
+      return;
+    }
+
     try {
       // 1. Update patient biodata
       const patientRes = await fetch(`/api/patients/${patientId}`, {

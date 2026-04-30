@@ -48,6 +48,35 @@ export default async function DashboardPage({
       prisma.patient.count({ where: { archivedAt: null } }),
     ]);
 
+  // Confirmatory testing stats
+  const NEEDS_CONFIRMATION = ["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"];
+
+  const [pendingConfirmation, confirmed] = await Promise.all([
+    // Pending confirmation — result needs confirmation but no confirmed result yet
+    prisma.screening.count({
+      where: {
+        archivedAt: null,
+        screeningResult: { in: NEEDS_CONFIRMATION },
+        OR: [
+          { confirmatoryAction: "REFERRED", confirmedResult: null },
+          { confirmatoryAction: "REFERRED", confirmedResult: "" },
+          { confirmatoryAction: "DONE", confirmedResult: null },
+          { confirmatoryAction: "DONE", confirmedResult: "" },
+          { confirmatoryAction: "NONE" },
+        ],
+      },
+    }),
+    // Confirmed — has a confirmed result documented
+    prisma.screening.count({
+      where: {
+        archivedAt: null,
+        screeningResult: { in: NEEDS_CONFIRMATION },
+        confirmedResult: { not: null },
+        NOT: { confirmedResult: "" },
+      },
+    }),
+  ]);
+
   // Multiple births stats
   const multipleBirthStats = await prisma.patient.groupBy({
     by: ["multipleBirthType"],
@@ -192,6 +221,11 @@ export default async function DashboardPage({
             `${v.sets} ${type} set${v.sets !== 1 ? "s" : ""} (${v.individuals} ind.)`
           ).join(" · ")
         : "No multiple births recorded" },
+    { label: "Pending Confirmation", value: pendingConfirmation, color: "#fd7e14", icon: "⏳",
+      alert: pendingConfirmation > 0,
+      subtitle: "Haemoglobin S, C or SC — awaiting confirmatory result" },
+    { label: "Confirmed", value: confirmed, color: "#198754", icon: "✅",
+      subtitle: "Confirmatory result documented" },
   ];
 
   return (

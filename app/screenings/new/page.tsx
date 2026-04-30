@@ -146,6 +146,17 @@ export default function NewScreeningPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError("");
+
+    // Validate confirmatory result when DONE is selected
+    const needsConfirmation = ["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"];
+    if (needsConfirmation.includes(screening.screeningResult) &&
+        screening.confirmatoryAction === "DONE" &&
+        !screening.confirmedResult.trim()) {
+      setError("Please enter the confirmed result — it is required when confirmatory action is Done.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/screenings", {
         method: "POST",
@@ -618,6 +629,12 @@ export default function NewScreeningPage() {
                       <option value="">Select result...</option>
                       {RESULTS.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
+                    {["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"].includes(screening.screeningResult) && (
+                      <div className="alert alert-warning small py-2 mt-2 mb-0">
+                        ⚠️ <strong>Confirmatory testing required</strong> — This result must be confirmed.
+                        Please select a confirmatory action below and document the confirmed result.
+                      </div>
+                    )}
                   </div>
                   <div className="col-12">
                     <label className="form-label small fw-semibold">Confirmatory Action</label>
