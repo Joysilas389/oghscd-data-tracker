@@ -414,20 +414,37 @@ export default function EditScreeningPage() {
                   {RESULTS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-semibold">Confirmatory Action</label>
-                <select className="form-select" value={screening.confirmatoryAction}
-                  onChange={setS("confirmatoryAction")}>
-                  <option value="NONE">None</option>
-                  <option value="DONE">Confirmatory Done</option>
-                  <option value="REFERRED">Referred for Confirmatory</option>
-                </select>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-semibold">Confirmed Result</label>
-                <input className="form-control" value={screening.confirmedResult}
-                  onChange={setS("confirmedResult")} />
-              </div>
+              {["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"].includes(screening.screeningResult) ? (
+                <>
+                  <div className="col-md-6">
+                    <label className="form-label small fw-semibold">Confirmatory Action *</label>
+                    <select className="form-select" value={screening.confirmatoryAction}
+                      onChange={setS("confirmatoryAction")}>
+                      <option value="NONE">Select action...</option>
+                      <option value="DONE">Confirmatory done — result ready</option>
+                      <option value="REFERRED">Referred — result pending</option>
+                    </select>
+                  </div>
+                  {screening.confirmatoryAction === "DONE" && (
+                    <div className="col-md-6">
+                      <label className="form-label small fw-semibold">
+                        Confirmed Result *
+                      </label>
+                      <input className="form-control" value={screening.confirmedResult}
+                        onChange={setS("confirmedResult")}
+                        placeholder="e.g. HbSS, HbSC, HbCC..." />
+                    </div>
+                  )}
+                </>
+              ) : (
+                screening.screeningResult && (
+                  <div className="col-12">
+                    <div className="alert alert-success small py-2 mb-0">
+                      ✅ No confirmatory testing needed for this result.
+                    </div>
+                  </div>
+                )
+              )}
               <div className="col-md-6">
                 <label className="form-label small fw-semibold">Facility</label>
                 <input className="form-control" value={screening.facilityName}

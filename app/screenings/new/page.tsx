@@ -636,25 +636,47 @@ export default function NewScreeningPage() {
                       </div>
                     )}
                   </div>
-                  <div className="col-12">
-                    <label className="form-label small fw-semibold">Confirmatory Action</label>
-                    <select className="form-select" value={screening.confirmatoryAction}
-                      onChange={ss("confirmatoryAction")}>
-                      <option value="NONE">None (Hemotype SC only available onsite)</option>
-                      <option value="DONE">Confirmatory done</option>
-                      <option value="REFERRED">Referred for confirmatory testing</option>
-                    </select>
-                    <div className="form-text small text-muted">
-                      Note: Only Hemotype SC / Hemotype C available at OGH.
-                      Other confirmatory tests require referral.
+                  {["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"].includes(screening.screeningResult) && (
+                    <>
+                      <div className="col-12">
+                        <label className="form-label small fw-semibold">Confirmatory Action *</label>
+                        <select className="form-select" value={screening.confirmatoryAction}
+                          onChange={e => {
+                            ss("confirmatoryAction")(e);
+                            if (e.target.value !== "DONE") {
+                              setScreening(p => ({ ...p, confirmedResult: "" }));
+                            }
+                          }}>
+                          <option value="NONE">Select action...</option>
+                          <option value="DONE">Confirmatory done — result ready</option>
+                          <option value="REFERRED">Referred for confirmatory testing — result pending</option>
+                        </select>
+                        <div className="form-text small text-muted">
+                          Note: Only Hemotype SC / Hemotype C available at OGH.
+                          Other confirmatory tests require referral.
+                        </div>
+                      </div>
+                      {screening.confirmatoryAction === "DONE" && (
+                        <div className="col-12">
+                          <label className="form-label small fw-semibold">
+                            Confirmed Result *
+                            <span className="text-danger ms-1">required when confirmatory is done</span>
+                          </label>
+                          <input className="form-control" value={screening.confirmedResult}
+                            onChange={ss("confirmedResult")}
+                            placeholder="Enter confirmed result e.g. HbSS, HbSC, HbCC..."
+                            required />
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {!["Haemoglobin S", "Haemoglobin C", "Sickle-C Disease (SC)"].includes(screening.screeningResult) && screening.screeningResult && (
+                    <div className="col-12">
+                      <div className="alert alert-success small py-2 mb-0">
+                        ✅ <strong>No confirmatory testing needed</strong> — This result is conclusive from the Hemotype SC screen.
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label small fw-semibold">Confirmed Result</label>
-                    <input className="form-control" value={screening.confirmedResult}
-                      onChange={ss("confirmedResult")}
-                      placeholder="If confirmatory test was done" />
-                  </div>
+                  )}
                   <div className="col-12">
                     <label className="form-label small fw-semibold">Remarks</label>
                     <textarea className="form-control" rows={2}
